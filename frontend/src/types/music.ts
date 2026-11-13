@@ -114,6 +114,7 @@ export interface LyricsResponse {
   title: string;
   artist: string;
   is_synced: boolean;
+  is_instrumental?: boolean;
   lyrics: LyricLine[];
   plain_lyrics?: string;
   source: string;

@@ -10,7 +10,13 @@ from app.services.curated_lyrics import get_curated_lyrics
 logger = logging.getLogger(__name__)
 
 # Cache lyrics for 24 hours
-lyrics_cache = TTLCache(maxsize=1000, ttl=86400)
+lyrics_cache = TTLCache(maxsize=1500, ttl=86400)
+
+INSTRUMENTAL_GENRES = {
+    'dubstep', 'house', 'tech house', 'electronic', 'ambient', 'soundscape',
+    'techno', 'trance', 'drum & bass', 'classical', 'dnb', 'lofi', 'lo-fi',
+    'synthwave', 'chillstep', 'future bass', 'edm'
+}
 
 
 def clean_title_for_lyrics(text: str) -> str:
@@ -51,6 +57,21 @@ def clean_title_for_lyrics(text: str) -> str:
     cleaned = cleaned.replace('"', '').replace("'", "").strip()
     result = ' '.join(re.sub(r'[^\w\s]', ' ', cleaned).split())
     return result if result else text.strip()
+
+
+def is_likely_instrumental(title: str, genre: str = "", artist: str = "") -> bool:
+    """
+    Detects if a track is purely instrumental (EDM, Dubstep, ambient, background score, etc.)
+    so the UI can display '♪ Instrumental Track ♪' gracefully rather than 'No lyrics found'.
+    """
+    t = title.lower()
+    g = (genre or "").lower()
+    if any(k in t for k in ['(instrumental)', 'instrumental version', 'karaoke', 'soundscape', '140 mix']):
+        return True
+    if g in INSTRUMENTAL_GENRES:
+        if any(k in t for k in ['mix', 'dub', 'flip', 'bootleg', 'edit', 'beat', 'drop']):
+            return True
+    return False
 
 
 def score_lyric_candidate(
@@ -119,7 +140,7 @@ class LyricsService:
     def __init__(self):
         self.base_url = "https://lrclib.net/api"
         self.headers = {
-            "User-Agent": "ResonixMusic/2.0 (https://github.com/kishh20/resonix-music; support@resonix.app)"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
 
     def _parse_lrc(self, lrc_text: str) -> List[LyricLine]:
@@ -131,7 +152,6 @@ class LyricsService:
         if not lrc_text:
             return lines
 
-        # Detect [offset:+/-ms] tag
         offset_ms = 0
         offset_match = re.search(r'\[offset:\s*([+-]?\d+)\]', lrc_text, re.IGNORECASE)
         if offset_match:
@@ -141,8 +161,6 @@ class LyricsService:
                 offset_ms = 0
 
         offset_seconds = offset_ms / 1000.0
-
-        # Regex for [00:12.34] or [00:12.345] or [00:12]
         time_regex = re.compile(r'\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]')
 
         for raw_line in lrc_text.splitlines():
@@ -150,7 +168,6 @@ class LyricsService:
             if not raw_line:
                 continue
 
-            # Ignore LRC metadata tags
             if re.match(r'^\[(?:ar|ti|al|by|offset|length|re|ve):', raw_line, re.IGNORECASE):
                 continue
 
@@ -158,7 +175,6 @@ class LyricsService:
             if not matches:
                 continue
 
-            # Text after the timestamp(s) - preserve full UTF-8 Unicode
             last_match = matches[-1]
             text = raw_line[last_match.end():].strip()
 
@@ -176,9 +192,71 @@ class LyricsService:
                 total_seconds = round(minutes * 60 + seconds + fraction + offset_seconds, 2)
                 lines.append(LyricLine(time=max(0.0, total_seconds), text=text))
 
-        # Sort chronologically
         lines.sort(key=lambda x: x.time)
         return lines
+
+    async def _fetch_from_genius(self, client: httpx.AsyncClient, clean_title: str, primary_artist: str = "") -> Optional[str]:
+        """
+        Fetches lyrics from Genius for Indian, Bollywood, Pop, Rap, and indie songs.
+        """
+        try:
+            q = f"{clean_title} {primary_artist}".strip()
+            url = f"https://genius.com/api/search/multi?q={urllib.parse.quote(q)}"
+            resp = await client.get(url, timeout=4.5)
+            if resp.status_code != 200:
+                return None
+
+            data = resp.json()
+            sections = data.get('response', {}).get('sections', [])
+            for sec in sections:
+                if sec.get('type') == 'song':
+                    hits = sec.get('hits', [])
+                    for h in hits[:3]:
+                        res = h.get('result', {})
+                        res_title = clean_title_for_lyrics(res.get('title', '')).lower()
+
+                        # Strict title verification
+                        t_words = [w for w in clean_title.lower().split() if len(w) >= 2] or clean_title.lower().split()
+                        matches = sum(1 for w in t_words if w in res_title)
+                        if matches == 0:
+                            continue
+
+                        song_url = res.get('url')
+                        if song_url:
+                            page_resp = await client.get(song_url, timeout=4.5)
+                            if page_resp.status_code == 200:
+                                html = page_resp.text
+                                containers = re.findall(r'<div[^>]*data-lyrics-container="true"[^>]*>(.*?)</div>', html, re.DOTALL)
+                                if containers:
+                                    raw_text = '\n'.join(containers)
+                                    clean = re.sub(r'<br\s*/?>', '\n', raw_text)
+                                    clean = re.sub(r'<.*?>', '', clean)
+                                    clean = clean.replace('&amp;', '&').replace('&quot;', '"').replace('&#x27;', "'").strip()
+                                    clean = re.sub(r'^\d+\s*Contributors?.*?\n', '', clean, flags=re.IGNORECASE)
+                                    clean = re.sub(r'^[^\n]+Lyrics\n', '', clean, flags=re.IGNORECASE).strip()
+                                    if clean and len(clean) > 30:
+                                        return clean
+        except Exception as e:
+            logger.debug(f"Genius fetch exception for '{clean_title}': {e}")
+        return None
+
+    async def _fetch_from_lyrics_ovh(self, client: httpx.AsyncClient, clean_title: str, primary_artist: str = "") -> Optional[str]:
+        """
+        Public free lyrics API for Western, Pop, and Rock tracks.
+        """
+        if not primary_artist or not clean_title:
+            return None
+        try:
+            url = f"https://api.lyrics.ovh/v1/{urllib.parse.quote(primary_artist)}/{urllib.parse.quote(clean_title)}"
+            resp = await client.get(url, timeout=3.5)
+            if resp.status_code == 200:
+                data = resp.json()
+                lyrics = data.get('lyrics')
+                if lyrics and len(lyrics.strip()) > 30:
+                    return lyrics.strip()
+        except Exception:
+            pass
+        return None
 
     async def get_lyrics(
         self,
@@ -188,8 +266,12 @@ class LyricsService:
         track_id: Optional[str] = None
     ) -> LyricsResponse:
         """
-        Fetches synchronized lyrics with strict title & duration candidate verification.
-        Supports multilingual lyrics (Tamil, Hindi, English, Arabic) seamlessly.
+        Fetches lyrics using a multi-provider fallback cascade:
+        1. Instrumental detection (Dubstep, Electronic, Ambient) -> ♪ Instrumental Track ♪
+        2. Tier 0: Curated store for trending releases
+        3. Tier 1: LRCLIB (exact + candidate search with strict validation)
+        4. Tier 2: Genius (multilingual: Tamil, Hindi, Telugu, English, etc.)
+        5. Tier 3: Lyrics.ovh (global plain lyrics)
         """
         dur_key = duration if duration and duration > 0 else 0
         cache_key = f"{title.lower().strip()}_{artist.lower().strip()}_{dur_key}"
@@ -197,9 +279,24 @@ class LyricsService:
             return lyrics_cache[cache_key]
 
         clean_title = clean_title_for_lyrics(title)
-        primary_artist = artist.split(',')[0].split('&')[0].strip() if artist else ""
+        primary_artist = artist.split(',')[0].split('&')[0].replace(' - Topic', '').strip() if artist else ""
 
-        # Tier 0: Curated Multilingual Registry for verified soundtrack releases (e.g. FA FA FA)
+        # Step 1: Detect instrumental tracks
+        if is_likely_instrumental(title, artist=artist):
+            instr_res = LyricsResponse(
+                track_id=track_id,
+                title=title,
+                artist=artist,
+                is_synced=False,
+                is_instrumental=True,
+                lyrics=[],
+                plain_lyrics="♪ Instrumental Track ♪\n\nThis track contains no vocals — sit back and immerse in the music.",
+                source="instrumental"
+            )
+            lyrics_cache[cache_key] = instr_res
+            return instr_res
+
+        # Step 2: Curated Multilingual Registry for verified soundtrack releases
         curated = get_curated_lyrics(clean_title)
         if curated:
             parsed_lines = self._parse_lrc(curated.get("synced_lrc", ""))
@@ -208,6 +305,7 @@ class LyricsService:
                 title=curated.get("title") or title,
                 artist=curated.get("artist") or artist,
                 is_synced=bool(parsed_lines),
+                is_instrumental=False,
                 lyrics=parsed_lines,
                 plain_lyrics=curated.get("plain_lyrics"),
                 source="curated"
@@ -215,8 +313,8 @@ class LyricsService:
             lyrics_cache[cache_key] = res
             return res
 
-        async with httpx.AsyncClient(timeout=6.0, headers=self.headers) as client:
-            # Tier 1: Try exact match first on LRCLIB
+        async with httpx.AsyncClient(timeout=6.0, headers=self.headers, follow_redirects=True) as client:
+            # Step 3: Try exact match first on LRCLIB
             try:
                 params = {"track_name": clean_title, "artist_name": primary_artist}
                 if duration and duration > 0:
@@ -228,27 +326,26 @@ class LyricsService:
                     synced = data.get("syncedLyrics")
                     plain = data.get("plainLyrics")
 
-                    # Verify title from response data
                     resp_title = clean_title_for_lyrics(data.get("trackName") or "").lower()
                     if resp_title == clean_title.lower() or clean_title.lower() in resp_title:
-                        if synced:
-                            parsed_lines = self._parse_lrc(synced)
-                            if parsed_lines:
-                                res = LyricsResponse(
-                                    track_id=track_id,
-                                    title=title,
-                                    artist=artist,
-                                    is_synced=True,
-                                    lyrics=parsed_lines,
-                                    plain_lyrics=plain,
-                                    source="lrclib"
-                                )
-                                lyrics_cache[cache_key] = res
-                                return res
+                        if synced or plain:
+                            parsed_lines = self._parse_lrc(synced) if synced else []
+                            res = LyricsResponse(
+                                track_id=track_id,
+                                title=title,
+                                artist=artist,
+                                is_synced=bool(parsed_lines),
+                                is_instrumental=False,
+                                lyrics=parsed_lines,
+                                plain_lyrics=plain,
+                                source="lrclib"
+                            )
+                            lyrics_cache[cache_key] = res
+                            return res
             except Exception as e:
-                logger.warning(f"LRCLIB exact get error for '{title}': {e}")
+                logger.debug(f"LRCLIB exact get error for '{title}': {e}")
 
-            # Tier 2: Multi-tier Candidate Search with Strict Verification
+            # Step 4: Multi-tier LRCLIB Search with Strict Verification
             candidate_pool = []
             seen_ids = set()
 
@@ -270,9 +367,8 @@ class LyricsService:
                                     seen_ids.add(it_id)
                                     candidate_pool.append(it)
                 except Exception as se:
-                    logger.warning(f"LRCLIB search error with {s_params}: {se}")
+                    logger.debug(f"LRCLIB search error with {s_params}: {se}")
 
-            # Score and select best candidate
             if candidate_pool:
                 scored = []
                 for c in candidate_pool:
@@ -286,7 +382,6 @@ class LyricsService:
 
                 scored.sort(key=lambda x: x[0], reverse=True)
 
-                # Only accept positive scores (meaning title strictly verified)
                 if scored and scored[0][0] > 0:
                     winner = scored[0][1]
                     synced = winner.get("syncedLyrics")
@@ -298,6 +393,7 @@ class LyricsService:
                         title=title,
                         artist=artist,
                         is_synced=bool(parsed_lines),
+                        is_instrumental=False,
                         lyrics=parsed_lines,
                         plain_lyrics=plain,
                         source="lrclib"
@@ -305,12 +401,45 @@ class LyricsService:
                     lyrics_cache[cache_key] = res
                     return res
 
+            # Step 5: Fallback to Genius (Multilingual: Indian, Hindi, Tamil, Telugu, Pop)
+            genius_lyrics = await self._fetch_from_genius(client, clean_title, primary_artist)
+            if genius_lyrics:
+                res = LyricsResponse(
+                    track_id=track_id,
+                    title=title,
+                    artist=artist,
+                    is_synced=False,
+                    is_instrumental=False,
+                    lyrics=[],
+                    plain_lyrics=genius_lyrics,
+                    source="genius"
+                )
+                lyrics_cache[cache_key] = res
+                return res
+
+            # Step 6: Fallback to Lyrics.ovh (Global Pop / Western songs)
+            ovh_lyrics = await self._fetch_from_lyrics_ovh(client, clean_title, primary_artist)
+            if ovh_lyrics:
+                res = LyricsResponse(
+                    track_id=track_id,
+                    title=title,
+                    artist=artist,
+                    is_synced=False,
+                    is_instrumental=False,
+                    lyrics=[],
+                    plain_lyrics=ovh_lyrics,
+                    source="lyrics.ovh"
+                )
+                lyrics_cache[cache_key] = res
+                return res
+
         # Empty fallback (strictly prevents ever showing wrong song lyrics)
         fallback = LyricsResponse(
             track_id=track_id,
             title=title,
             artist=artist,
             is_synced=False,
+            is_instrumental=False,
             lyrics=[],
             plain_lyrics=None,
             source="none"

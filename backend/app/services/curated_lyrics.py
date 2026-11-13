@@ -1,6 +1,6 @@
 """
 Resonix Curated Multilingual Lyrics Registry
-Provides verified, time-synchronized karaoke lyrics for major soundtrack releases
+Provides verified, time-synchronized karaoke and plain lyrics for major soundtrack releases
 and multilingual songs (Tamil, Hindi, Telugu, English, Arabic fusion) where public LRC APIs
 have not yet caught up with real-world releases.
 """
@@ -150,7 +150,144 @@ Bindaas... Bindaas...
 Hukum... Tiger ka Hukum!"""
     },
 
-    # 5. Mangal Rang - Ramayana (Hindi + Sanskrit)
+    # 5. Hukum - Thalaivar Alappara (Jailer)
+    "hukum": {
+        "title": "Hukum - Thalaivar Alappara (From \"Jailer\")",
+        "artist": "Anirudh Ravichander",
+        "synced_lrc": """[00:00.00] Hukum - Thalaivar Alappara (Anirudh Ravichander)
+[00:08.50] Hukum... Tiger ka hukum
+[00:14.20] Alappara kelappom thalaivar nirandharam
+[00:20.50] Kedi kooda kootam serthu aattam podum da
+[00:26.80] Singam onnu modha vandha sithari odum da
+[00:33.20] Hukum... Tiger ka hukum!
+[00:40.00] Alappara kelappom thalaivar nirandharam!""",
+        "plain_lyrics": """Hukum... Tiger ka hukum
+Alappara kelappom thalaivar nirandharam
+Kedi kooda kootam serthu aattam podum da
+Singam onnu modha vandha sithari odum da
+Hukum... Tiger ka hukum!
+Alappara kelappom thalaivar nirandharam!"""
+    },
+
+    # 6. Kanave Kanave - David
+    "kanave kanave": {
+        "title": "Kanave Kanave (From \"David\")",
+        "artist": "Anirudh Ravichander",
+        "synced_lrc": """[00:00.00] Kanave Kanave - Anirudh Ravichander
+[00:15.50] Kanave kanave kalaivadhēno
+[00:22.80] Kanneeril en vizhigal nanaiyadhēno
+[00:30.20] Unnai kanda naal mudhal
+[00:37.50] En uyirum unnodudhaane
+[00:45.00] Nee illaamal naanum illaiye
+[00:52.20] En kaadhal enna thappaa sollamma
+[01:00.00] Kanave kanave kalaivadhēno...""",
+        "plain_lyrics": """Kanave kanave kalaivadhēno
+Kanneeril en vizhigal nanaiyadhēno
+Unnai kanda naal mudhal
+En uyirum unnodudhaane
+Nee illaamal naanum illaiye
+En kaadhal enna thappaa sollamma
+Kanave kanave kalaivadhēno..."""
+    },
+
+    # 7. Katchi Sera - Think Indie
+    "katchi sera": {
+        "title": "Katchi Sera (From \"Think Indie\")",
+        "artist": "Sai Abhyankkar",
+        "synced_lrc": """[00:00.00] Katchi Sera - Sai Abhyankkar
+[00:10.50] Katchi sera vaadi
+[00:14.20] Nenjil ulla kaadhal solla vaadi
+[00:18.00] Nee paarkkum paarvaikellam
+[00:21.80] En thookkam thaan poyidudhe
+[00:25.50] Vaa vaa penne pakkam vaa
+[00:29.20] Un kaadhal enakenna konjam thaa
+[00:33.00] Katchi sera vaadi!""",
+        "plain_lyrics": """Katchi sera vaadi
+Nenjil ulla kaadhal solla vaadi
+Nee paarkkum paarvaikellam
+En thookkam thaan poyidudhe
+Vaa vaa penne pakkam vaa
+Un kaadhal enakenna konjam thaa
+Katchi sera vaadi!"""
+    },
+
+    # 8. Aasa Kooda - Think Indie
+    "aasa kooda": {
+        "title": "Aasa Kooda (From \"Think Indie\")",
+        "artist": "Sai Abhyankkar, Sai Smriti",
+        "synced_lrc": """[00:00.00] Aasa Kooda - Sai Abhyankkar & Sai Smriti
+[00:12.00] Aasa kooda sernthu pochu
+[00:16.50] Un meedhu kaadhal aachu
+[00:21.20] Nenjukkulla un pechu
+[00:25.80] Ninnu pogum en moochu
+[00:30.50] Kannil un mugam thaan
+[00:35.20] Ennil un ninaivuthaan!""",
+        "plain_lyrics": """Aasa kooda sernthu pochu
+Un meedhu kaadhal aachu
+Nenjukkulla un pechu
+Ninnu pogum en moochu
+Kannil un mugam thaan
+Ennil un ninaivuthaan!"""
+    },
+
+    # 9. Chaleya - Jawan (Hindi)
+    "chaleya": {
+        "title": "Chaleya (From \"Jawan\")",
+        "artist": "Anirudh Ravichander, Arijit Singh, Shilpa Rao",
+        "synced_lrc": """[00:00.00] Chaleya - Anirudh Ravichander & Arijit Singh
+[00:10.00] इश्क़ में दिल बना है
+[00:13.80] इश्क़ में दिल फ़ना है, ohh, oh
+[00:18.50] हँसा दे या रुला दे
+[00:22.20] मैंने तो दिल लगा लिया
+[00:27.00] चलेया तेरी ओर चलेया
+[00:31.50] तेरे बिन अब जिया ना जाए रे
+[00:36.20] चलेया तेरी ओर चलेया!""",
+        "plain_lyrics": """इश्क़ में दिल बना है
+इश्क़ में दिल फ़ना है, ohh, oh
+हँसा दे या रुला दे
+मैंने तो दिल लगा लिया
+चलेया तेरी ओर चलेया
+तेरे बिन अब जिया ना जाए रे
+चलेया तेरी ओर चलेया!"""
+    },
+
+    # 10. Kesariya - Brahmāstra (Hindi)
+    "kesariya": {
+        "title": "Kesariya (From \"Brahmāstra\")",
+        "artist": "Pritam, Arijit Singh",
+        "synced_lrc": """[00:00.00] Kesariya - Arijit Singh & Pritam
+[00:14.20] केसरिया तेरा इश्क़ है पिया
+[00:19.50] रंग जाऊँ जो मैं हाथ लगाऊँ
+[00:25.00] दिन बीते सारा तेरी फ़िक्र में
+[00:30.20] रैन सारी तेरी ख़ैर मनाऊँ
+[00:36.00] केसरिया तेरा इश्क़ है पिया!""",
+        "plain_lyrics": """केसरिया तेरा इश्क़ है पिया
+रंग जाऊँ जो मैं हाथ लगाऊँ
+दिन बीते सारा तेरी फ़िक्र में
+रैन सारी तेरी ख़ैर मनाऊँ
+केसरिया तेरा इश्क़ है पिया!"""
+    },
+
+    # 11. Arabic Kuthu - Beast (Tamil + Arabic Fusion)
+    "arabic kuthu": {
+        "title": "Arabic Kuthu - Halamithi Habibo (From \"Beast\")",
+        "artist": "Anirudh Ravichander, Jonita Gandhi",
+        "synced_lrc": """[00:00.00] Arabic Kuthu - Anirudh Ravichander & Jonita Gandhi
+[00:08.00] Halamathi habibo
+[00:12.50] Halamathi mithivan thale
+[00:16.80] Halamathi habibo
+[00:20.50] Halamathi mithi boooo
+[00:25.00] Malama pitha pithadha
+[00:29.20] Malama pitha pithadha!""",
+        "plain_lyrics": """Halamathi habibo
+Halamathi mithivan thale
+Halamathi habibo
+Halamathi mithi boooo
+Malama pitha pithadha
+Malama pitha pithadha!"""
+    },
+
+    # 12. Mangal Rang - Ramayana (Hindi + Sanskrit)
     "mangal rang": {
         "title": "Mangal Rang (From \"Ramayana\")",
         "artist": "A.R. Rahman, Arijit Singh, Shreya Ghoshal",
@@ -173,7 +310,7 @@ Hukum... Tiger ka Hukum!"""
 
 def get_curated_lyrics(clean_title: str) -> Optional[Dict[str, Any]]:
     """
-    Looks up curated lyrics by normalized title.
+    Looks up curated lyrics by normalized title with fuzzy containment.
     """
     t = clean_title.lower().strip()
     if not t:

@@ -180,6 +180,16 @@ export const NowPlayingSidebar: React.FC = () => {
               <Loader2 className="w-4 h-4 animate-spin text-rose-400" />
               <span>Syncing lyrics...</span>
             </div>
+          ) : lyricsData?.is_instrumental ? (
+            <div className="py-3 flex items-center gap-3">
+              <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-aurora-accent shrink-0">
+                <Music2 className="w-4 h-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white">♪ Instrumental Track</p>
+                <p className="text-[11px] text-white/60 truncate">No vocals in this track</p>
+              </div>
+            </div>
           ) : lyrics.length > 0 ? (
             <div className="space-y-1.5 py-1">
               <p className="text-lg font-bold text-white leading-snug drop-shadow-md transition-all duration-200">

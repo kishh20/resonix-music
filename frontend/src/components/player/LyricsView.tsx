@@ -7,7 +7,9 @@ import {
   Play, 
   RefreshCw, 
   AlertCircle,
-  Loader2
+  Loader2,
+  Disc3,
+  Music2
 } from 'lucide-react';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { api } from '../../services/api';
@@ -145,9 +147,9 @@ export const LyricsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Sync Mode Badge & Controls Right */}
+        {/* Sync Mode / Source Badge & Controls Right */}
         <div className="flex items-center gap-3">
-          {lyricsData?.is_synced && (
+          {lyricsData?.is_synced ? (
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="hidden sm:inline">Time-Synced</span>
@@ -176,7 +178,19 @@ export const LyricsView: React.FC = () => {
                 </button>
               </div>
             </div>
-          )}
+          ) : lyricsData?.is_instrumental ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-semibold">
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+              <span>Instrumental</span>
+            </div>
+          ) : lyricsData?.plain_lyrics ? (
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+              <FileText className="w-3.5 h-3.5" />
+              <span className="uppercase text-[10px] tracking-wider">
+                {lyricsData.source === 'genius' ? 'Genius Verified' : lyricsData.source === 'curated' ? 'Curated' : 'Verified Lyrics'}
+              </span>
+            </div>
+          ) : null}
 
           {/* Toggle Synced / Plain mode if both available */}
           {lyricsData?.plain_lyrics && lyricsData?.is_synced && (
@@ -254,15 +268,40 @@ export const LyricsView: React.FC = () => {
           </div>
         )}
 
+        {/* Instrumental View */}
+        {!isLoading && lyricsData?.is_instrumental && (
+          <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center py-20 space-y-6">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-purple-500/20 via-emerald-500/20 to-cyan-500/20 border border-white/10 flex items-center justify-center text-aurora-accent shadow-2xl backdrop-blur-xl">
+                <Disc3 className="w-12 h-12 animate-spin text-aurora-accent duration-1000" style={{ animationDuration: '8s' }} />
+              </div>
+              <span className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-emerald-500/30 border border-emerald-400/40 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-emerald-300" />
+              </span>
+            </div>
+            <div className="space-y-2">
+              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-semibold uppercase tracking-wider">
+                Instrumental Track
+              </span>
+              <h4 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight pt-2">
+                ♪ Pure Music ♪
+              </h4>
+              <p className="text-sm sm:text-base text-slate-400 max-w-sm mx-auto leading-relaxed">
+                This track contains no vocals — sit back and immerse in the sound.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Plain Text Mode Fallback */}
-        {!isLoading && (isPlainMode || (!lyricsData?.is_synced && lyricsData?.plain_lyrics)) && (
+        {!isLoading && !lyricsData?.is_instrumental && (isPlainMode || (!lyricsData?.is_synced && lyricsData?.plain_lyrics)) && (
           <div className="max-w-2xl mx-auto py-12 text-slate-300 text-lg md:text-xl font-medium leading-loose whitespace-pre-line pb-40">
             {lyricsData?.plain_lyrics}
           </div>
         )}
 
         {/* Empty State: No Lyrics Found */}
-        {!isLoading && (!lyricsData || (!lyricsData.is_synced && !lyricsData.plain_lyrics)) && (
+        {!isLoading && (!lyricsData || (!lyricsData.is_synced && !lyricsData.plain_lyrics && !lyricsData.is_instrumental)) && (
           <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center py-20 space-y-4">
             <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-500">
               <Mic2 className="w-8 h-8" />

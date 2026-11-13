@@ -62,6 +62,7 @@ class LyricsResponse(BaseModel):
     title: str
     artist: str
     is_synced: bool = False
+    is_instrumental: bool = False
     lyrics: List[LyricLine] = []
     plain_lyrics: Optional[str] = None
     source: str = "lrclib"
