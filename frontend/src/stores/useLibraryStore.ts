@@ -44,15 +44,36 @@ interface LibraryState {
   isArtistFollowed: (artistName: string) => boolean;
 }
 
+// Synchronously restore library from localStorage on frame 0 so playlists never vanish on code update/HMR
+function getInitialLibraryState() {
+  try {
+    const rawPl = localStorage.getItem('resonix_custom_playlists') || localStorage.getItem('aurora_custom_playlists');
+    const playlists = rawPl ? JSON.parse(rawPl) : [];
+    const rawLiked = localStorage.getItem('resonix_liked_songs') || localStorage.getItem('aurora_liked_songs');
+    const liked = rawLiked ? JSON.parse(rawLiked) : [];
+    const rawHist = localStorage.getItem('resonix_listening_history') || localStorage.getItem('aurora_listening_history');
+    const history = rawHist ? JSON.parse(rawHist) : [];
+    return {
+      playlists: Array.isArray(playlists) ? playlists : [],
+      likedSongs: Array.isArray(liked) ? liked : [],
+      listeningHistory: Array.isArray(history) ? history : []
+    };
+  } catch (e) {
+    console.warn('Error reading synchronous initial library:', e);
+    return { playlists: [], likedSongs: [], listeningHistory: [] };
+  }
+}
+
+const initialLib = getInitialLibraryState();
+
 export const useLibraryStore = create<LibraryState>((set, get) => ({
-  likedSongs: [],
-  playlists: [],
-  listeningHistory: [],
+  likedSongs: initialLib.likedSongs,
+  playlists: initialLib.playlists,
+  listeningHistory: initialLib.listeningHistory,
   followedArtists: [],
-  isLoading: true,
+  isLoading: false,
 
   loadLibrary: async (userId?: string) => {
-    set({ isLoading: true });
     try {
       const [liked, playlists, followed] = await Promise.all([
         getLikedSongsCloud(userId),
@@ -60,12 +81,12 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
         api.getFollowedArtists(userId).catch(() => [])
       ]);
 
-      const storedHistory = localStorage.getItem('aurora_listening_history');
-      const history = storedHistory ? JSON.parse(storedHistory) : [];
+      const rawHist = localStorage.getItem('resonix_listening_history') || localStorage.getItem('aurora_listening_history');
+      const history = rawHist ? JSON.parse(rawHist) : get().listeningHistory;
 
       set({
-        likedSongs: liked,
-        playlists: playlists,
+        likedSongs: liked && liked.length > 0 ? liked : get().likedSongs,
+        playlists: playlists && playlists.length > 0 ? playlists : get().playlists,
         listeningHistory: history,
         followedArtists: followed,
         isLoading: false
@@ -180,7 +201,7 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
     const updated = [{ track, played_at: new Date().toISOString() }, ...filtered].slice(0, 50);
 
     // Save to local storage cache so history persists across sessions
-    localStorage.setItem('aurora_listening_history', JSON.stringify(updated));
+    localStorage.setItem('resonix_listening_history', JSON.stringify(updated));
     set({ listeningHistory: updated });
 
     await recordHistoryCloud(track, userId);

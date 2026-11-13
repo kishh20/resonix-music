@@ -6,3 +6,4 @@ from .discovery import router as discovery_router
 from .lyrics import router as lyrics_router
 from .discord import router as discord_router
 from .jam import router as jam_router
+from .library import router as library_router

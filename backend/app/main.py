@@ -2,7 +2,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
-from app.api import music_router, spotify_router, recommendations_router, health_router, discovery_router, lyrics_router, discord_router, jam_router
+from app.api import (
+    music_router, spotify_router, recommendations_router, 
+    health_router, discovery_router, lyrics_router, 
+    discord_router, jam_router, library_router
+)
 from app.services.scheduler_service import catalogue_scheduler
 
 @asynccontextmanager
@@ -38,6 +42,7 @@ app.include_router(discovery_router)
 app.include_router(lyrics_router)
 app.include_router(discord_router)
 app.include_router(jam_router)
+app.include_router(library_router)
 
 @app.get("/")
 async def root():

@@ -1,5 +1,6 @@
 import { 
   Track, 
+  Playlist,
   Genre, 
   SearchResponse, 
   SpotifyImportResponse, 
@@ -281,5 +282,63 @@ export const api = {
     const resp = await fetch(`/api/jam/${encodeURIComponent(jamCode.trim().toUpperCase())}`);
     if (!resp.ok) throw new Error('Jam session not found or expired');
     return resp.json();
+  },
+
+  // ==========================================
+  // PERMANENT LOCAL DISK PLAYLIST STORAGE
+  // ==========================================
+  async getPlaylistsDisk(): Promise<Playlist[]> {
+    try {
+      const resp = await fetch('/api/library/playlists');
+      if (resp.ok) return resp.json();
+    } catch (e) {
+      console.warn('Failed to fetch playlists from disk backend:', e);
+    }
+    return [];
+  },
+
+  async savePlaylistDisk(playlist: Playlist): Promise<Playlist | null> {
+    try {
+      const resp = await fetch('/api/library/save-playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(playlist)
+      });
+      if (resp.ok) return resp.json();
+    } catch (e) {
+      console.warn('Failed to save playlist to disk backend:', e);
+    }
+    return null;
+  },
+
+  async deletePlaylistDisk(playlistId: string): Promise<boolean> {
+    try {
+      const resp = await fetch(`/api/library/playlist/${encodeURIComponent(playlistId)}`, {
+        method: 'DELETE'
+      });
+      return resp.ok;
+    } catch {
+      return false;
+    }
+  },
+
+  async getLikedSongsDisk(): Promise<Track[]> {
+    try {
+      const resp = await fetch('/api/library/liked-songs');
+      if (resp.ok) return resp.json();
+    } catch {}
+    return [];
+  },
+
+  async toggleLikeDisk(track: Track, isLiked: boolean): Promise<Track[]> {
+    try {
+      const resp = await fetch('/api/library/toggle-like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ track, is_liked: isLiked })
+      });
+      if (resp.ok) return resp.json();
+    } catch {}
+    return [];
   }
 };
