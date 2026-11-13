@@ -32,12 +32,133 @@ KNOWN_OG_LABELS = [
     'saregama', 'lahari', 'aditya music', 'muzik247', 'divo', 'speed records',
     'tips official', 'yrf', 'eros now', 'sun pictures', 'sun tv', 'gemini tv',
     'surya tv', 'star vijay', 'vijay television', 'rajshri', 'satyam audios',
-    'anand audio', 'jhankar', 'svf music',
+    'anand audio', 'jhankar', 'svf music', 'om',
     'universal music', 'warner music', 'interscope', 'republic records', 'atlantic records',
     'columbia records', 'rca records', 'def jam', 'capitol records', 'virgin music',
     'geffen', 'epic records', 'island records', 'asylum records', 'parlophone', 'polydor',
     'motown', 'vevo'
 ]
+
+KNOWN_COMPOSERS_OR_SINGERS = [
+    'anirudh ravichander', 'anirudh', 'a.r. rahman', 'ar rahman', 'rahman',
+    'sai abhyankkar', 'yuvan shankar raja', 'yuvan', 'harris jayaraj',
+    'santhosh narayanan', 'devi sri prasad', 'dsp', 'thaman s', 's. thaman', 'thaman',
+    'sean roldan', 'pritam', 'sachin-jigar', 'amit trivedi', 'vishal-shekhar',
+    'arijit singh', 'sid sriram', 'shreya ghoshal', 'badshah', 'diljit dosanjh',
+    'yo yo honey singh', 'gv prakash', 'g.v. prakash', 'ilayaraja', 'ilayaraaja',
+    'vidyasagar', 'd. imman', 'keeravani', 'm.m. keeravani', 'sam c.s.',
+    'sushin shyam', 'govind vasantha', 'against the current', 'the weeknd'
+]
+
+def split_outside_brackets(s: str, sep: str = ' - ') -> list:
+    """Splits string by separator only if it is outside parentheses and brackets."""
+    depth = 0
+    parts = []
+    current = []
+    i = 0
+    while i < len(s):
+        char = s[i]
+        if char in '([{':
+            depth += 1
+        elif char in ')]}':
+            depth = max(0, depth - 1)
+        
+        if depth == 0 and s[i:i+len(sep)] == sep:
+            parts.append(''.join(current).strip())
+            current = []
+            i += len(sep)
+            continue
+        current.append(char)
+        i += 1
+    parts.append(''.join(current).strip())
+    return [p for p in parts if p]
+
+def clean_title_noise(s: str) -> str:
+    """Removes lyrical/video suffixes and bracket clutter while preserving core title."""
+    cleaned = re.sub(
+        r'[\(\[\{]\s*(?:official|audio|video|lyric|hd|4k|lyrical|visualizer).*?[\)\]\}]', 
+        '', 
+        s, 
+        flags=re.IGNORECASE
+    ).strip()
+    cleaned = re.sub(
+        r'\s*[-–—]?\s*(?:lyrical(?:\s*video)?|lyric\s*video|video\s*song|official\s*(?:video|audio|lyrical)|audio\s*song|full\s*(?:video|audio)|visualizer|4k|hd).*$',
+        '',
+        cleaned,
+        flags=re.IGNORECASE
+    ).strip()
+    cleaned = re.sub(r'\s+\b(?:lyrical|lyric\s*video|official\s*video|audio|video\s*song)\b.*$', '', cleaned, flags=re.IGNORECASE).strip()
+    return cleaned or s
+
+def parse_yt_title_and_artist(raw_title: str, channel: str) -> tuple[str, str]:
+    """
+    Robust title and artist parser that correctly handles:
+    1. Topic channels ('- Topic')
+    2. Pipe '|' formatted soundtracks ('Title | Movie | Cast | Composer')
+    3. 'Title - Lyric Video' vs 'Artist - Title'
+    Never corrupts movie titles or inverts artist/song names.
+    """
+    raw_title = raw_title.strip()
+    channel = channel.strip()
+    clean_channel = channel.replace(' - Topic', '').strip()
+
+    # Rule 1: Topic channel is strictly the artist
+    if '- topic' in channel.lower() or channel.lower().endswith('topic'):
+        return clean_title_noise(raw_title), clean_channel
+
+    # Rule 2: Check for Pipe '|' format: e.g. "Song Title | Movie | Cast | Composer"
+    if '|' in raw_title:
+        segments = [s.strip() for s in raw_title.split('|') if s.strip()]
+        first_segment = segments[0]
+        
+        # If first segment is "Song Name - Suffix", strip suffix
+        if ' - ' in first_segment:
+            parts = split_outside_brackets(first_segment, ' - ')
+            if len(parts) >= 2 and re.search(r'\b(lyric|video|audio|song|official|promo)\b', parts[1], re.IGNORECASE):
+                first_segment = parts[0]
+        
+        clean_title = clean_title_noise(first_segment)
+
+        # Find composer / artist in segments
+        artist = clean_channel
+        ch_is_label = any(lbl in clean_channel.lower() for lbl in KNOWN_OG_LABELS) or len(clean_channel) <= 3
+        
+        found_artist = None
+        for seg in segments[1:]:
+            seg_lower = seg.lower()
+            for comp in KNOWN_COMPOSERS_OR_SINGERS:
+                if comp in seg_lower:
+                    found_artist = seg
+                    break
+            if found_artist:
+                break
+        
+        if found_artist:
+            artist = found_artist
+        elif ch_is_label and len(segments) > 1:
+            last_seg = segments[-1]
+            if not any(x in last_seg.lower() for x in ['4k', 'official', 'teaser', 'trailer', 'promo', 'release', 'movie']):
+                artist = last_seg
+
+        return clean_title, artist
+
+    # Rule 3: Hyphen separated ' - ' outside brackets
+    parts = split_outside_brackets(raw_title, ' - ')
+    if len(parts) >= 2:
+        part1 = parts[0].strip()
+        part2 = ' - '.join(parts[1:]).strip()
+
+        # If part2 is just "Lyric Video", "Official Video", etc.
+        if re.search(r'^(?:lyric\s*video|lyrical|official\s*(?:video|audio)|video\s*song|audio\s*song)$', part2, re.IGNORECASE):
+            return clean_title_noise(part1), clean_channel
+
+        # Standard "Artist - Title"
+        if any(lbl in part1.lower() for lbl in KNOWN_OG_LABELS):
+            return clean_title_noise(part2), clean_channel
+        
+        return clean_title_noise(part2), part1
+
+    return clean_title_noise(raw_title), clean_channel
 
 UNOFFICIAL_PATTERNS = [
     r'\b(multimix|mashup|mix|slowed|reverb|slowed\s*\+\s*reverb|8d\s*audio|8d|bass\s*boosted|boosted|nightcore)\b',
@@ -277,24 +398,8 @@ class YouTubeService:
                     duration = int(e.get('duration') or 0)
                     thumb = e.get('thumbnail') or f"https://i.ytimg.com/vi/{vid_id}/hqdefault.jpg"
 
-                    # Parse artist and title if formatted as "Artist - Title"
-                    artist = channel
-                    title = raw_title
-                    if ' - ' in raw_title:
-                        parts = raw_title.split(' - ', 1)
-                        artist = parts[0].strip()
-                        title = parts[1].strip()
-                    elif ' - Topic' in channel:
-                        artist = channel.replace(' - Topic', '').strip()
-
-                    clean_title = re.sub(
-                        r'[\(\[\{].*?(official|video|audio|lyric|remix|hd|4k|dude|movie|music video).*?[\)\]\}]', 
-                        '', 
-                        title, 
-                        flags=re.IGNORECASE
-                    ).strip()
-                    if not clean_title:
-                        clean_title = title
+                    # Use intelligent title & artist parser (handles pipes, - Topic, and bracketed hyphens)
+                    clean_title, artist = parse_yt_title_and_artist(raw_title, channel)
 
                     title_enc = urllib.parse.quote(clean_title)
                     artist_enc = urllib.parse.quote(artist)

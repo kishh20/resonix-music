@@ -240,7 +240,7 @@ export const LyricsView: React.FC = () => {
                   </span>
 
                   <p 
-                    className={`leading-relaxed tracking-tight transition-all duration-300 ${
+                    className={`leading-relaxed tracking-normal transition-all duration-300 ${
                       isActive 
                         ? 'text-2xl sm:text-3xl md:text-4xl text-white drop-shadow-[0_4px_24px_rgba(16,185,129,0.35)]'
                         : 'text-xl sm:text-2xl md:text-3xl'
