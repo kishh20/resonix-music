@@ -6,7 +6,7 @@ from app.services.discovery_service import discovery_service
 logger = logging.getLogger(__name__)
 
 # Frequencies in seconds
-INTERVAL_NEW_RELEASES = 2 * 60 * 60     # Every 2 hours
+INTERVAL_NEW_RELEASES = 1 * 60 * 60     # Every 1 hour
 INTERVAL_DAILY_REFRESH = 24 * 60 * 60    # Daily
 INTERVAL_WEEKLY_VERIFY = 7 * 24 * 60 * 60 # Weekly
 
@@ -19,12 +19,12 @@ class CatalogueScheduler:
         self._last_weekly = 0.0
 
     async def _loop(self):
-        logger.info("Catalogue automated background scheduler started.")
-        # Run initial discovery sync shortly after boot if catalogue is empty
-        await asyncio.sleep(5)
-        if len(discovery_service.tracks) < 10:
+        logger.info("Catalogue automated background discovery agent started.")
+        # Run initial discovery sync shortly after boot if catalogue is sparse
+        await asyncio.sleep(3)
+        if len(discovery_service.tracks) < 25:
             try:
-                logger.info("Catalogue is empty. Running initial music discovery seeding...")
+                logger.info("Catalogue is sparse. Running initial autonomous music discovery seeding...")
                 await discovery_service.run_full_discovery_sync()
                 self._last_discovery = time.time()
                 self._last_daily = time.time()

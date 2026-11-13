@@ -163,6 +163,13 @@ class FollowArtistRequest(BaseModel):
     provider: str = "audius"
     user_id: Optional[str] = None
 
+class DiscoverySyncRequest(BaseModel):
+    user_id: Optional[str] = None
+    favorite_artists: List[str] = []
+    preferred_languages: List[str] = []
+    preferred_genres: List[str] = []
+    region: Optional[str] = None
+
 class SyncLog(BaseModel):
     id: str
     provider: str

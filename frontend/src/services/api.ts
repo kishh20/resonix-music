@@ -125,17 +125,28 @@ export const api = {
   // ==========================================
   // AUTOMATIC DISCOVERY & CATALOGUE ENDPOINTS
   // ==========================================
-  async getNewReleases(userId?: string): Promise<NewReleasesResponse> {
+  async getNewReleases(userId?: string, favoriteArtists?: string[]): Promise<NewReleasesResponse> {
     const params = new URLSearchParams();
     if (userId) params.append('user_id', userId);
+    if (favoriteArtists && favoriteArtists.length > 0) {
+      favoriteArtists.forEach(a => params.append('favorite_artists', a));
+    }
     const resp = await fetch(`/api/discovery/new-releases?${params.toString()}`);
     if (!resp.ok) throw new Error('Failed to fetch new releases');
     return resp.json();
   },
 
-  async syncDiscoveryNow(): Promise<any> {
+  async syncDiscoveryNow(preferences?: {
+    user_id?: string;
+    favorite_artists?: string[];
+    preferred_languages?: string[];
+    preferred_genres?: string[];
+    region?: string;
+  }): Promise<any> {
     const resp = await fetch('/api/discovery/sync-now', {
-      method: 'POST'
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: preferences ? JSON.stringify(preferences) : undefined
     });
     if (!resp.ok) throw new Error('Failed to trigger discovery synchronization');
     return resp.json();
