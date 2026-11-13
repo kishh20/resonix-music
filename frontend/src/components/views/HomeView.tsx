@@ -1,9 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Play, Sparkles, Flame, Clock, Radio, Music, Compass } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { 
+  Play, 
+  Sparkles, 
+  SlidersHorizontal, 
+  Flame, 
+  Radio, 
+  Music, 
+  Compass, 
+  Heart,
+  Globe2
+} from 'lucide-react';
 import { Track, RecommendationResponse } from '../../types/music';
 import { api } from '../../services/api';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
+import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { SectionHeader } from '../common/SectionHeader';
 import { TrackCard } from '../common/TrackCard';
 import { TrackRow } from '../common/TrackRow';
@@ -21,51 +32,141 @@ export const HomeView: React.FC<HomeViewProps> = ({
 }) => {
   const { playTrack } = usePlayerStore();
   const { listeningHistory, likedSongs } = useLibraryStore();
+  const { 
+    languages, 
+    genres, 
+    artists, 
+    region, 
+    hasCompletedOnboarding, 
+    openOnboarding 
+  } = usePreferencesStore();
 
   const [trendingTracks, setTrendingTracks] = useState<Track[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null);
+  const [favoriteArtistTracks, setFavoriteArtistTracks] = useState<Track[]>([]);
+  const [languageTracks, setLanguageTracks] = useState<Track[]>([]);
+  const [regionalTracks, setRegionalTracks] = useState<Track[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadHomeData() {
-      setIsLoading(true);
-      try {
-        const recentIds = listeningHistory.slice(0, 10).map(h => h.track.id);
-        const likedIds = likedSongs.slice(0, 10).map(t => t.id);
+  const loadHomeData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const recentIds = listeningHistory.slice(0, 10).map(h => h.track.id);
+      const likedIds = likedSongs.slice(0, 10).map(t => t.id);
 
-        const [trending, recs] = await Promise.all([
-          api.getTrending(undefined, 24),
-          api.getRecommendations({
-            recent_track_ids: recentIds,
-            liked_track_ids: likedIds,
-            preferred_genres: ['electronic', 'lofi', 'pop', 'ambient'],
-            limit: 12
-          }).catch(() => null)
-        ]);
+      const [trending, recs] = await Promise.all([
+        api.getTrending(undefined, 24),
+        api.getRecommendations({
+          recent_track_ids: recentIds,
+          liked_track_ids: likedIds,
+          preferred_genres: genres.length > 0 ? genres : ['Pop', 'Electronic / EDM'],
+          favorite_artists: artists,
+          preferred_languages: languages,
+          region: region,
+          limit: 16
+        }).catch(() => null)
+      ]);
 
-        setTrendingTracks(trending);
-        setRecommendations(recs);
-      } catch (e) {
-        console.error('Failed to load home tracks:', e);
-      } finally {
-        setIsLoading(false);
+      setTrendingTracks(trending || []);
+      setRecommendations(recs);
+
+      // Fetch dedicated shelf for top favorite artist if selected
+      if (artists && artists.length > 0) {
+        try {
+          const topArtistRes = await api.search(artists[0], undefined, 12);
+          if (topArtistRes.tracks) {
+            setFavoriteArtistTracks(topArtistRes.tracks);
+          }
+        } catch (e) {
+          console.debug('Failed to fetch favorite artist shelf:', e);
+        }
+      } else {
+        setFavoriteArtistTracks([]);
       }
+
+      // Fetch dedicated shelf for top preferred language if selected
+      if (languages && languages.length > 0 && languages[0].toLowerCase() !== 'english') {
+        try {
+          const langRes = await api.search(`${languages[0]} hits`, undefined, 12);
+          if (langRes.tracks) {
+            setLanguageTracks(langRes.tracks);
+          }
+        } catch (e) {
+          console.debug('Failed to fetch language shelf:', e);
+        }
+      } else {
+        setLanguageTracks([]);
+      }
+
+      // Fetch dedicated shelf for region if selected and non-global
+      if (region && region.toLowerCase() !== 'global' && region.toLowerCase() !== 'worldwide') {
+        try {
+          const regRes = await api.search(`top hits ${region}`, undefined, 12);
+          if (regRes.tracks) {
+            setRegionalTracks(regRes.tracks);
+          }
+        } catch (e) {
+          console.debug('Failed to fetch regional shelf:', e);
+        }
+      } else {
+        setRegionalTracks([]);
+      }
+
+    } catch (e) {
+      console.error('Failed to load home tracks:', e);
+    } finally {
+      setIsLoading(false);
     }
+  }, [languages, genres, artists, region, listeningHistory, likedSongs]);
 
+  useEffect(() => {
     loadHomeData();
-  }, []);
+  }, [languages, genres, artists, region]);
 
-  const heroTrack = trendingTracks[0];
+  // Determine hero track: prioritize a personalized recommendation or top trending
+  const heroTrack = (recommendations?.personalized_tracks && recommendations.personalized_tracks.length > 0)
+    ? recommendations.personalized_tracks[0]
+    : trendingTracks[0];
+
+  const topArtistName = artists && artists.length > 0 ? artists[0] : null;
+  const topLanguageName = languages && languages.length > 0 ? languages[0] : null;
 
   return (
     <div className="space-y-8 pb-12 animate-in fade-in duration-300">
+      
+      {/* 0. Spotify-Style Taste Customization Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 px-4 rounded-2xl bg-slate-900/80 border border-white/5 backdrop-blur-md shadow-sm">
+        <div className="flex items-center gap-2.5 text-xs text-slate-300">
+          <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <span className="font-semibold text-white">Your Music Taste: </span>
+            <span className="text-slate-400">
+              {region ? `${region}` : 'Global'} 
+              {languages.length > 0 ? ` • ${languages.slice(0, 3).join(', ')}` : ''} 
+              {genres.length > 0 ? ` • ${genres.slice(0, 2).join(', ')}` : ''}
+              {artists.length > 0 ? ` • ${artists.slice(0, 2).join(', ')}` : ''}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={openOnboarding}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-emerald-500 hover:text-black text-xs font-semibold text-emerald-400 transition-all hover:scale-105 active:scale-95 shadow-sm"
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span>{hasCompletedOnboarding ? 'Customize Taste' : 'Set Your Preferences'}</span>
+        </button>
+      </div>
+
       {/* 1. Hero Feature Banner */}
       {heroTrack && (
         <div className="relative rounded-3xl overflow-hidden p-6 md:p-10 bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 border border-white/10 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="relative z-10 max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-aurora-accent/20 border border-aurora-accent/30 text-aurora-accent text-xs font-semibold mb-4">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Featured Release • {heroTrack.bitrate}</span>
+              <span>Personalized Pick • {heroTrack.bitrate || '320kbps High Fidelity'}</span>
             </div>
 
             <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight leading-tight line-clamp-2">
@@ -77,12 +178,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </p>
 
             <p className="text-xs text-slate-400 mt-2 font-mono uppercase tracking-wider">
-              High Quality Audio • Streamed via {heroTrack.provider}
+              OG Creator Audio • Streamed via {heroTrack.provider}
             </p>
 
             <div className="flex items-center gap-4 mt-6">
               <button
-                onClick={() => playTrack(heroTrack, trendingTracks)}
+                onClick={() => playTrack(heroTrack, recommendations?.personalized_tracks || trendingTracks)}
                 className="flex items-center gap-2.5 px-6 py-3 rounded-full bg-aurora-accent text-black font-bold text-sm hover:scale-105 active:scale-95 transition-transform shadow-lg shadow-emerald-500/25"
               >
                 <Play className="w-4 h-4 fill-current ml-0.5" />
@@ -100,8 +201,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {/* Hero Artwork */}
-          <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 border border-white/10 group cursor-pointer"
-               onClick={() => playTrack(heroTrack, trendingTracks)}>
+          <div 
+            className="relative w-48 h-48 md:w-64 md:h-64 rounded-2xl overflow-hidden shadow-2xl flex-shrink-0 border border-white/10 group cursor-pointer"
+            onClick={() => playTrack(heroTrack, recommendations?.personalized_tracks || trendingTracks)}
+          >
             <img
               src={heroTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
               alt={heroTrack.title}
@@ -121,7 +224,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <section>
           <SectionHeader
             title="Made For You"
-            subtitle="Personalized playlists based on your music taste & history"
+            subtitle="Daily curated playlists tailored to your favorite languages, artists & genres"
           />
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
             {recommendations.mixes.map((mix) => (
@@ -162,11 +265,71 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </section>
       )}
 
-      {/* 3. Trending Now */}
+      {/* 3. Because You Love [Favorite Artist] Shelf */}
+      {topArtistName && favoriteArtistTracks.length > 0 && (
+        <section>
+          <SectionHeader
+            title={`Because You Like ${topArtistName}`}
+            subtitle={`Top streamed original audio and matching tracks by ${topArtistName}`}
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {favoriteArtistTracks.slice(0, 12).map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                queueContext={favoriteArtistTracks}
+                onAddToPlaylist={onOpenAddToPlaylist}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. Regional Shelf: Top Hits in [Region] */}
+      {regionalTracks.length > 0 && (
+        <section>
+          <SectionHeader
+            title={`Trending in ${region}`}
+            subtitle={`Top streamed hits, local viral anthems, and popular recordings in ${region}`}
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {regionalTracks.slice(0, 12).map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                queueContext={regionalTracks}
+                onAddToPlaylist={onOpenAddToPlaylist}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 5. Language Shelf: Sounds in [Top Language] */}
+      {topLanguageName && languageTracks.length > 0 && (
+        <section>
+          <SectionHeader
+            title={`Sounds of ${topLanguageName}`}
+            subtitle={`Essential chartbusters, melodies, and new drops in ${topLanguageName}`}
+          />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {languageTracks.slice(0, 12).map((track) => (
+              <TrackCard
+                key={track.id}
+                track={track}
+                queueContext={languageTracks}
+                onAddToPlaylist={onOpenAddToPlaylist}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 6. Trending Hits (Global Baseline) */}
       <section>
         <SectionHeader
-          title="Trending Hits"
-          subtitle="Top streamed tracks across authorized independent providers"
+          title="Trending Hits Worldwide"
+          subtitle="Top streamed tracks across authorized independent creator nodes"
         />
 
         {isLoading ? (
@@ -189,7 +352,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         )}
       </section>
 
-      {/* 4. Quick Genre Exploration Chips */}
+      {/* 7. Quick Genre Exploration Chips */}
       <section>
         <SectionHeader
           title="Browse By Mood & Genre"
@@ -217,7 +380,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 5. Recently Played (if any) */}
+      {/* 8. Recently Played (if any) */}
       {listeningHistory.length > 0 && (
         <section>
           <SectionHeader

@@ -3,6 +3,7 @@ import { Search, Loader2, Sparkles, Filter, Music, X, Play } from 'lucide-react'
 import { Track, SearchResponse } from '../../types/music';
 import { api } from '../../services/api';
 import { usePlayerStore } from '../../stores/usePlayerStore';
+import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { TrackRow } from '../common/TrackRow';
 import { TrackCard } from '../common/TrackCard';
 
@@ -285,32 +286,71 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
       {/* 5. Pre-search Discovery Tags */}
       {!hasSearched && (
-        <div className="space-y-4 pt-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
-            Suggested Searches
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {[
-              'Sai Abhyankkar',
-              'Sid Sriram',
-              'Anirudh Ravichander',
-              'Harris Jayaraj',
-              'A.R. Rahman',
-              'Synthwave',
-              'Lo-Fi Study',
-              'Acoustic Guitar'
-            ].map((tag) => (
-              <button
-                key={tag}
-                onClick={() => {
-                  setQuery(tag);
-                  handleSearch(tag, provider);
-                }}
-                className="px-4 py-2 rounded-xl bg-aurora-surface hover:bg-white/10 text-sm font-medium text-slate-300 hover:text-white border border-white/5 transition-colors"
-              >
-                {tag}
-              </button>
-            ))}
+        <div className="space-y-6 pt-4">
+          {/* Personalized Favorites Chips */}
+          {(() => {
+            const { artists, languages, genres } = usePreferencesStore.getState();
+            const personalizedTags = [
+              ...artists,
+              ...languages.map(l => `${l} Hits`),
+              ...genres
+            ];
+            
+            if (personalizedTags.length === 0) return null;
+
+            return (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 font-mono">
+                    Based On Your Taste
+                  </h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {personalizedTags.slice(0, 10).map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        setQuery(tag);
+                        handleSearch(tag, provider);
+                      }}
+                      className="px-4 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-sm font-semibold text-emerald-300 border border-emerald-500/20 transition-all hover:scale-105 active:scale-95 shadow-sm"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">
+              Suggested Searches
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'Arijit Singh',
+                'Sid Sriram',
+                'Anirudh Ravichander',
+                'The Weeknd',
+                'Taylor Swift',
+                'A.R. Rahman',
+                'Lo-Fi Study',
+                'Acoustic Guitar'
+              ].map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    setQuery(tag);
+                    handleSearch(tag, provider);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-aurora-surface hover:bg-white/10 text-sm font-medium text-slate-300 hover:text-white border border-white/5 transition-colors"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

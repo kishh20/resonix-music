@@ -155,6 +155,14 @@ export interface RecommendationResponse {
   mixes: RecommendationMix[];
 }
 
+export interface UserPreferences {
+  languages: string[];
+  genres: string[];
+  artists: string[];
+  region: string;
+  hasCompletedOnboarding: boolean;
+}
+
 export interface UserProfile {
   id: string;
   email?: string;

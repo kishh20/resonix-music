@@ -35,7 +35,11 @@ class ArchiveMusicService:
                     for doc in docs:
                         ident = doc.get("identifier")
                         title = doc.get("title") or "Archive Audio"
+                        if isinstance(title, list):
+                            title = " / ".join(str(t) for t in title if t) or "Archive Audio"
                         creator = doc.get("creator") or "Community Artist"
+                        if isinstance(creator, list):
+                            creator = ", ".join(str(c) for c in creator if c) or "Community Artist"
                         genre = doc.get("genre") or "Acoustic / Indie"
                         if isinstance(genre, list):
                             genre = genre[0] if genre else "Indie"
@@ -94,7 +98,11 @@ class ArchiveMusicService:
                     for doc in docs:
                         ident = doc.get("identifier")
                         title = doc.get("title") or query
+                        if isinstance(title, list):
+                            title = " / ".join(str(t) for t in title if t) or query
                         creator = doc.get("creator") or "Community Artist"
+                        if isinstance(creator, list):
+                            creator = ", ".join(str(c) for c in creator if c) or "Community Artist"
                         genre = doc.get("genre") or "Acoustic"
                         if isinstance(genre, list):
                             genre = genre[0] if genre else "Acoustic"

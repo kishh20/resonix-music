@@ -3,6 +3,7 @@ import { ArrowLeft, Play, Sparkles, Loader2, Compass } from 'lucide-react';
 import { Genre, Track } from '../../types/music';
 import { api } from '../../services/api';
 import { usePlayerStore } from '../../stores/usePlayerStore';
+import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { TrackCard } from '../common/TrackCard';
 import { SectionHeader } from '../common/SectionHeader';
 
@@ -119,34 +120,81 @@ export const ExploreView: React.FC<ExploreViewProps> = ({
         </div>
       ) : (
         /* Genre Catalog Grid */
-        <div className="space-y-6">
-          <SectionHeader
-            title="Explore Everything"
-            subtitle="Discover music by vibe, rhythm, culture, and sonic texture"
-          />
+        <div className="space-y-8">
+          {/* Preferred Genres First */}
+          {(() => {
+            const { genres: preferredGenresList } = usePreferencesStore.getState();
+            if (!preferredGenresList || preferredGenresList.length === 0) return null;
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
-            {genres.map((g) => (
-              <div
-                key={g.id}
-                onClick={() => handleSelectGenre(g)}
-                className={`group relative h-40 md:h-48 rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${g.color} shadow-lg cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-white/10`}
-              >
-                {/* Title */}
-                <h3 className="relative z-10 text-xl md:text-2xl font-black text-white tracking-tight drop-shadow-md">
-                  {g.name}
-                </h3>
+            const matchedGenres = genres.filter(g => 
+              preferredGenresList.some(p => p.toLowerCase().includes(g.name.toLowerCase()) || g.name.toLowerCase().includes(p.toLowerCase()))
+            );
 
-                {/* Angled image thumbnail at bottom right */}
-                <div className="absolute -bottom-2 -right-4 w-28 h-28 md:w-32 md:h-32 rounded-xl overflow-hidden shadow-2xl transform rotate-[25deg] group-hover:rotate-[15deg] group-hover:scale-110 transition-transform duration-500 border border-white/20">
-                  <img
-                    src={g.image}
-                    alt=""
-                    className="w-full h-full object-cover"
+            if (matchedGenres.length === 0) return null;
+
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-400" />
+                  <SectionHeader
+                    title="Your Favorite Genres"
+                    subtitle="Direct shortcuts to your selected music tastes"
                   />
                 </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6">
+                  {matchedGenres.map((g) => (
+                    <div
+                      key={`fav-${g.id}`}
+                      onClick={() => handleSelectGenre(g)}
+                      className={`group relative h-40 md:h-48 rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${g.color} shadow-lg cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border-2 border-emerald-400/40`}
+                    >
+                      <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/40 backdrop-blur-md text-[10px] font-bold text-emerald-300 border border-emerald-400/30">
+                        Favorite
+                      </div>
+                      <h3 className="relative z-10 text-xl md:text-2xl font-black text-white tracking-tight drop-shadow-md">
+                        {g.name}
+                      </h3>
+                      <div className="absolute -bottom-2 -right-4 w-28 h-28 md:w-32 md:h-32 rounded-xl overflow-hidden shadow-2xl transform rotate-[25deg] group-hover:rotate-[15deg] group-hover:scale-110 transition-transform duration-500 border border-white/20">
+                        <img
+                          src={g.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            );
+          })()}
+
+          <div>
+            <SectionHeader
+              title="Explore Everything"
+              subtitle="Discover music by vibe, rhythm, culture, and sonic texture"
+            />
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 md:gap-6 mt-4">
+              {genres.map((g) => (
+                <div
+                  key={g.id}
+                  onClick={() => handleSelectGenre(g)}
+                  className={`group relative h-40 md:h-48 rounded-2xl p-5 overflow-hidden bg-gradient-to-br ${g.color} shadow-lg cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 border border-white/10`}
+                >
+                  <h3 className="relative z-10 text-xl md:text-2xl font-black text-white tracking-tight drop-shadow-md">
+                    {g.name}
+                  </h3>
+
+                  <div className="absolute -bottom-2 -right-4 w-28 h-28 md:w-32 md:h-32 rounded-xl overflow-hidden shadow-2xl transform rotate-[25deg] group-hover:rotate-[15deg] group-hover:scale-110 transition-transform duration-500 border border-white/20">
+                    <img
+                      src={g.image}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

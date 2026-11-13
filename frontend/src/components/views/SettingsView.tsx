@@ -14,12 +14,16 @@ import {
   Clock, 
   Database,
   Download,
-  Laptop
+  Laptop,
+  Sparkles,
+  SlidersHorizontal,
+  Globe2
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
+import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { SectionHeader } from '../common/SectionHeader';
 import { SyncStatusResponse } from '../../types/music';
@@ -28,6 +32,14 @@ export const SettingsView: React.FC = () => {
   const { user, isConfigured } = useAuthStore();
   const { loadLibrary } = useLibraryStore();
   const { isInstalled, installApp } = usePWAInstall();
+  const { 
+    languages, 
+    genres, 
+    artists, 
+    region, 
+    openOnboarding, 
+    resetPreferences 
+  } = usePreferencesStore();
 
   const [networkInfo, setNetworkInfo] = useState<{
     lan_ip: string;
@@ -77,6 +89,104 @@ export const SettingsView: React.FC = () => {
         title="Settings & System Configuration"
         subtitle="Manage your audio playback, mobile phone connection, catalogue synchronisation and cloud storage"
       />
+
+      {/* 0. Music Taste Profile & Personalization */}
+      <section className="p-6 rounded-3xl bg-aurora-card border border-white/10 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-black flex items-center justify-center font-bold">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Music Taste & Personalization</h3>
+              <p className="text-xs text-slate-400">Customized languages, favorite artists, genres and regional recommendations</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openOnboarding}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-md active:scale-95"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Update Taste Profile</span>
+            </button>
+            <button
+              onClick={resetPreferences}
+              className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+          {/* Region Card */}
+          <div className="p-4 rounded-2xl bg-aurora-surface/70 border border-white/5 space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Region
+            </span>
+            <p className="text-sm font-bold text-white flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-emerald-400" />
+              <span>{region || 'Global / Worldwide'}</span>
+            </p>
+          </div>
+
+          {/* Languages Card */}
+          <div className="p-4 rounded-2xl bg-aurora-surface/70 border border-white/5 space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Languages ({languages.length})
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {languages.length > 0 ? (
+                languages.slice(0, 3).map(l => (
+                  <span key={l} className="px-2 py-0.5 rounded-md bg-white/10 text-[11px] font-medium text-slate-200">
+                    {l}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-500">Not set</span>
+              )}
+            </div>
+          </div>
+
+          {/* Favorite Genres Card */}
+          <div className="p-4 rounded-2xl bg-aurora-surface/70 border border-white/5 space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Genres ({genres.length})
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {genres.length > 0 ? (
+                genres.slice(0, 3).map(g => (
+                  <span key={g} className="px-2 py-0.5 rounded-md bg-emerald-500/15 text-[11px] font-medium text-emerald-300">
+                    {g}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-500">Not set</span>
+              )}
+            </div>
+          </div>
+
+          {/* Favorite Artists Card */}
+          <div className="p-4 rounded-2xl bg-aurora-surface/70 border border-white/5 space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block font-semibold">
+              Favorite Artists ({artists.length})
+            </span>
+            <div className="flex flex-wrap gap-1">
+              {artists.length > 0 ? (
+                artists.slice(0, 3).map(a => (
+                  <span key={a} className="px-2 py-0.5 rounded-md bg-purple-500/15 text-[11px] font-medium text-purple-300">
+                    {a}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-slate-500">Not set</span>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* 1. Automatic Music Discovery & Catalogue Synchronisation Engine */}
       <section className="p-6 rounded-3xl bg-aurora-card border border-white/10 shadow-xl space-y-6">

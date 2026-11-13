@@ -21,6 +21,7 @@ import { SleepTimerModal } from './components/player/SleepTimerModal';
 import { JamModal } from './components/jam/JamModal';
 import { AddToPlaylistModal } from './components/common/AddToPlaylistModal';
 import { AuthModal } from './components/views/AuthModal';
+import { OnboardingModal } from './components/onboarding/OnboardingModal';
 
 // Views
 import { HomeView } from './components/views/HomeView';
@@ -224,6 +225,8 @@ export default function App() {
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
       />
+
+      <OnboardingModal />
     </div>
   );
 }

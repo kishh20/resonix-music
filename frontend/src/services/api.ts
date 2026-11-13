@@ -109,6 +109,8 @@ export const api = {
     liked_track_ids?: string[];
     preferred_genres?: string[];
     favorite_artists?: string[];
+    preferred_languages?: string[];
+    region?: string;
     limit?: number;
   }): Promise<RecommendationResponse> {
     const resp = await fetch('/api/recommendations/for-you', {

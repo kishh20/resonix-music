@@ -95,6 +95,8 @@ class RecommendationRequest(BaseModel):
     liked_track_ids: List[str] = []
     preferred_genres: List[str] = []
     favorite_artists: List[str] = []
+    preferred_languages: List[str] = []
+    region: Optional[str] = None
     limit: int = 25
 
 class RecommendationMix(BaseModel):

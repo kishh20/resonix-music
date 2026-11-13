@@ -1,5 +1,5 @@
 {
-  "last_synced_at": "2026-11-13T13:22:59.133252+00:00",
+  "last_synced_at": "2026-11-13T13:40:33.845975+00:00",
   "tracks": {
     "audius:AK3w5q0": {
       "id": "audius:AK3w5q0",
@@ -3232,46 +3232,6 @@
   "followed_artists": {},
   "sync_logs": [
     {
-      "id": "log_1794454834",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 8.58,
-      "error_message": null,
-      "created_at": "2026-11-12T03:40:25.953504+00:00"
-    },
-    {
-      "id": "log_1794455905",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 2.42,
-      "error_message": null,
-      "created_at": "2026-11-12T03:58:23.214553+00:00"
-    },
-    {
-      "id": "log_1794456315",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 3.76,
-      "error_message": null,
-      "created_at": "2026-11-12T04:05:11.924329+00:00"
-    },
-    {
-      "id": "log_1794456466",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 3.4,
-      "error_message": null,
-      "created_at": "2026-11-12T04:07:43.363161+00:00"
-    },
-    {
       "id": "log_1794456492",
       "provider": "all_providers",
       "action": "discovery",
@@ -3430,6 +3390,46 @@
       "duration_seconds": 2.54,
       "error_message": null,
       "created_at": "2026-11-13T13:22:59.133252+00:00"
+    },
+    {
+      "id": "log_1794576780",
+      "provider": "all_providers",
+      "action": "discovery",
+      "items_count": 0,
+      "status": "success",
+      "duration_seconds": 3.45,
+      "error_message": null,
+      "created_at": "2026-11-13T13:32:56.760121+00:00"
+    },
+    {
+      "id": "log_1794576806",
+      "provider": "all_providers",
+      "action": "discovery",
+      "items_count": 0,
+      "status": "success",
+      "duration_seconds": 3.66,
+      "error_message": null,
+      "created_at": "2026-11-13T13:33:23.160691+00:00"
+    },
+    {
+      "id": "log_1794577174",
+      "provider": "all_providers",
+      "action": "discovery",
+      "items_count": 0,
+      "status": "success",
+      "duration_seconds": 3.55,
+      "error_message": null,
+      "created_at": "2026-11-13T13:39:30.844263+00:00"
+    },
+    {
+      "id": "log_1794577236",
+      "provider": "all_providers",
+      "action": "discovery",
+      "items_count": 0,
+      "status": "success",
+      "duration_seconds": 2.52,
+      "error_message": null,
+      "created_at": "2026-11-13T13:40:33.845975+00:00"
     }
   ]
 }
