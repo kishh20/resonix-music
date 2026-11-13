@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="128" fill="#0d0d14" />
+  <rect width="512" height="512" rx="128" fill="url(#bg)" opacity="0.15" />
+  <!-- Wave / Music Icon -->
+  <g filter="url(#glow)">
+    <path d="M140 320V192c0-26.5 21.5-48 48-48h144c26.5 0 48 21.5 48 48v128" stroke="url(#bg)" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="140" cy="340" r="44" fill="url(#bg)"/>
+    <circle cx="380" cy="320" r="44" fill="url(#bg)"/>
+    <path d="M220 220v80M260 180v120M300 210v90" stroke="#ffffff" stroke-width="20" stroke-linecap="round" opacity="0.9"/>
+  </g>
+</svg>

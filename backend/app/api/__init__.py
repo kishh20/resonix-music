@@ -1,0 +1,8 @@
+from .music import router as music_router
+from .spotify import router as spotify_router
+from .recommendations import router as recommendations_router
+from .health import router as health_router
+from .discovery import router as discovery_router
+from .lyrics import router as lyrics_router
+from .discord import router as discord_router
+from .jam import router as jam_router
