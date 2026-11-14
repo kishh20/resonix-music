@@ -1,3 +1,4 @@
+import asyncio
 import httpx
 import logging
 from fastapi import APIRouter, Query, HTTPException, Request
@@ -11,6 +12,25 @@ from app.services.yt_service import yt_service
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/music", tags=["Music"])
+
+# High-capacity connection pool for audio proxying to prevent socket exhaustion under high traffic
+_stream_client: Optional[httpx.AsyncClient] = None
+
+def get_stream_client() -> httpx.AsyncClient:
+    global _stream_client
+    if _stream_client is None or _stream_client.is_closed:
+        _stream_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(connect=6.0, read=30.0, write=15.0, pool=30.0),
+            limits=httpx.Limits(max_keepalive_connections=150, max_connections=500, keepalive_expiry=30.0),
+            follow_redirects=True
+        )
+    return _stream_client
+
+async def close_stream_client():
+    global _stream_client
+    if _stream_client and not _stream_client.is_closed:
+        await _stream_client.aclose()
+        _stream_client = None
 
 @router.get("/trending", response_model=List[Track])
 async def get_trending(
@@ -106,7 +126,7 @@ async def _pipe_audio_stream(url: str, request: Request):
     if "range" in request.headers:
         req_headers["range"] = request.headers["range"]
 
-    client = httpx.AsyncClient(timeout=30.0, follow_redirects=True)
+    client = get_stream_client()
     try:
         req = client.build_request("GET", url, headers=req_headers)
         resp = await client.send(req, stream=True)
@@ -120,10 +140,6 @@ async def _pipe_audio_stream(url: str, request: Request):
             finally:
                 try:
                     await resp.aclose()
-                except Exception:
-                    pass
-                try:
-                    await client.aclose()
                 except Exception:
                     pass
 
@@ -148,6 +164,5 @@ async def _pipe_audio_stream(url: str, request: Request):
             media_type=response_headers["Content-Type"]
         )
     except Exception as e:
-        await client.aclose()
         logger.error(f"Streaming error for {url}: {e}")
         raise HTTPException(status_code=502, detail=f"Streaming proxy error: {str(e)}")

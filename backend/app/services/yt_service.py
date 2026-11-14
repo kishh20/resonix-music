@@ -4,6 +4,8 @@ import urllib.request
 import json
 import logging
 import asyncio
+import concurrent.futures
+import os
 from typing import List, Optional, Dict, Any
 from cachetools import TTLCache
 import yt_dlp
@@ -11,10 +13,19 @@ from app.models.music import Track
 
 logger = logging.getLogger(__name__)
 
+# Bounded ThreadPoolExecutor to prevent memory exhaustion and thread leaks under high concurrency
+_yt_thread_pool = concurrent.futures.ThreadPoolExecutor(
+    max_workers=min(32, max(4, (os.cpu_count() or 4) * 4)),
+    thread_name_prefix="resonix_yt"
+)
+
+# Concurrency semaphore: bounds simultaneous heavy extraction tasks to avoid CPU/OOM spikes
+_yt_semaphore = asyncio.Semaphore(16)
+
 # Cache resolved audio URLs for 4 hours (Google Video CDN URLs typically expire after 6 hours)
-stream_url_cache = TTLCache(maxsize=1000, ttl=14400)
+stream_url_cache = TTLCache(maxsize=2000, ttl=14400)
 # Cache search results for 1 hour
-search_cache = TTLCache(maxsize=500, ttl=3600)
+search_cache = TTLCache(maxsize=1000, ttl=3600)
 
 def clean_track_title(title: str) -> str:
     """
@@ -420,7 +431,8 @@ class YouTubeService:
                 return tracks
 
         try:
-            tracks = await loop.run_in_executor(None, do_search)
+            async with _yt_semaphore:
+                tracks = await loop.run_in_executor(_yt_thread_pool, do_search)
             search_cache[cache_key] = tracks
             return tracks
         except Exception as e:
@@ -545,7 +557,8 @@ class YouTubeService:
                 }
 
         try:
-            result = await loop.run_in_executor(None, do_extract)
+            async with _yt_semaphore:
+                result = await loop.run_in_executor(_yt_thread_pool, do_extract)
             if result and result.get('stream_url'):
                 stream_url_cache[cache_key] = result
                 stream_url_cache[video_id_or_query] = result
