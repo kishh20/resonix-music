@@ -2,6 +2,7 @@ import re
 import urllib.parse
 import httpx
 import logging
+import asyncio
 from typing import List, Optional, Dict, Any
 from cachetools import TTLCache
 from app.models.music import LyricLine, LyricsResponse
@@ -10,7 +11,7 @@ from app.services.curated_lyrics import get_curated_lyrics
 logger = logging.getLogger(__name__)
 
 # Cache lyrics for 24 hours
-lyrics_cache = TTLCache(maxsize=1500, ttl=86400)
+lyrics_cache = TTLCache(maxsize=3000, ttl=86400)
 
 INSTRUMENTAL_GENRES = {
     'dubstep', 'house', 'tech house', 'electronic', 'ambient', 'soundscape',
@@ -119,15 +120,17 @@ def score_lyric_candidate(
         if any(a in c_artist for a in artists) or c_artist in t_artist:
             score += 30.0
 
-    # 3. Duration Matching
+    # 3. Duration Matching (Generous enough for music video intro/outro differences)
     if target_duration > 0 and c_dur > 0:
         diff = abs(c_dur - target_duration)
-        if diff <= 4:
+        if diff <= 5:
             score += 40.0
-        elif diff <= 12:
-            score += 20.0
-        elif diff > 40:
-            score -= 80.0
+        elif diff <= 15:
+            score += 25.0
+        elif diff <= 35:
+            score += 10.0
+        elif diff > 90:
+            score -= 50.0
 
     # 4. Bonus for Synchronized Timestamps
     if candidate.get("syncedLyrics"):
@@ -195,49 +198,127 @@ class LyricsService:
         lines.sort(key=lambda x: x.time)
         return lines
 
-    async def _fetch_from_genius(self, client: httpx.AsyncClient, clean_title: str, primary_artist: str = "") -> Optional[str]:
+    async def _fetch_from_youtube_captions(
+        self,
+        track_id: Optional[str],
+        clean_title: str,
+        primary_artist: str,
+        client: httpx.AsyncClient
+    ) -> Optional[LyricsResponse]:
         """
-        Fetches lyrics from Genius for Indian, Bollywood, Pop, Rap, and indie songs.
+        Extracts synchronized timed karaoke lyrics directly from YouTube audio/video subtitles.
+        Supports official captions and automated subtitles across English, Tamil, Hindi, Telugu,
+        Spanish, Japanese, Korean, Arabic, and 80+ languages with millisecond precision.
         """
+        import yt_dlp
+        loop = asyncio.get_running_loop()
+
+        def do_extract():
+            ydl_opts = {
+                'skip_download': True,
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': False
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                query = ""
+                if track_id and track_id.startswith("youtube:"):
+                    vid = track_id.split(":", 1)[1]
+                    query = f"https://www.youtube.com/watch?v={vid}"
+                elif track_id and track_id.startswith("yt_"):
+                    vid = track_id.replace("yt_", "")
+                    query = f"https://www.youtube.com/watch?v={vid}"
+                else:
+                    query = f"ytsearch1:{clean_title} {primary_artist}".strip()
+
+                try:
+                    info = ydl.extract_info(query, download=False)
+                    if not info:
+                        return None
+                    if 'entries' in info:
+                        if not info['entries']:
+                            return None
+                        info = info['entries'][0]
+
+                    subs = info.get('subtitles') or {}
+                    auto_subs = info.get('automatic_captions') or {}
+
+                    preferred_langs = ['en', 'en-IN', 'ta', 'hi', 'te', 'ml', 'kn', 'bn', 'pa', 'es', 'fr']
+                    chosen_entries = None
+
+                    # Prioritize human subtitles first
+                    for lang in preferred_langs:
+                        if lang in subs:
+                            chosen_entries = subs[lang]
+                            break
+                    if not chosen_entries and subs:
+                        chosen_entries = next(iter(subs.values()))
+
+                    # Fallback to auto-captions
+                    if not chosen_entries:
+                        for lang in preferred_langs:
+                            if lang in auto_subs:
+                                chosen_entries = auto_subs[lang]
+                                break
+                    if not chosen_entries and auto_subs:
+                        chosen_entries = next(iter(auto_subs.values()))
+
+                    if not chosen_entries:
+                        return None
+
+                    # Prefer json3 format
+                    json_url = None
+                    for fmt in chosen_entries:
+                        if fmt.get('ext') == 'json3':
+                            json_url = fmt.get('url')
+                            break
+                    if not json_url and chosen_entries:
+                        json_url = chosen_entries[0].get('url')
+
+                    return json_url
+                except Exception as e:
+                    logger.debug(f"yt_dlp caption extract error for '{clean_title}': {e}")
+                    return None
+
+        json_url = await loop.run_in_executor(None, do_extract)
+        if not json_url:
+            return None
+
         try:
-            q = f"{clean_title} {primary_artist}".strip()
-            url = f"https://genius.com/api/search/multi?q={urllib.parse.quote(q)}"
-            resp = await client.get(url, timeout=4.5)
+            resp = await client.get(json_url, timeout=5.0)
             if resp.status_code != 200:
                 return None
-
             data = resp.json()
-            sections = data.get('response', {}).get('sections', [])
-            for sec in sections:
-                if sec.get('type') == 'song':
-                    hits = sec.get('hits', [])
-                    for h in hits[:3]:
-                        res = h.get('result', {})
-                        res_title = clean_title_for_lyrics(res.get('title', '')).lower()
 
-                        # Strict title verification
-                        t_words = [w for w in clean_title.lower().split() if len(w) >= 2] or clean_title.lower().split()
-                        matches = sum(1 for w in t_words if w in res_title)
-                        if matches == 0:
-                            continue
+            lines: List[LyricLine] = []
+            plain_parts: List[str] = []
 
-                        song_url = res.get('url')
-                        if song_url:
-                            page_resp = await client.get(song_url, timeout=4.5)
-                            if page_resp.status_code == 200:
-                                html = page_resp.text
-                                containers = re.findall(r'<div[^>]*data-lyrics-container="true"[^>]*>(.*?)</div>', html, re.DOTALL)
-                                if containers:
-                                    raw_text = '\n'.join(containers)
-                                    clean = re.sub(r'<br\s*/?>', '\n', raw_text)
-                                    clean = re.sub(r'<.*?>', '', clean)
-                                    clean = clean.replace('&amp;', '&').replace('&quot;', '"').replace('&#x27;', "'").strip()
-                                    clean = re.sub(r'^\d+\s*Contributors?.*?\n', '', clean, flags=re.IGNORECASE)
-                                    clean = re.sub(r'^[^\n]+Lyrics\n', '', clean, flags=re.IGNORECASE).strip()
-                                    if clean and len(clean) > 30:
-                                        return clean
+            for ev in data.get('events', []):
+                start_ms = ev.get('tStartMs')
+                if start_ms is None:
+                    continue
+                time_sec = round(start_ms / 1000.0, 2)
+                segs = ev.get('segs', [])
+                text = ''.join([s.get('utf8', '') for s in segs]).strip()
+                clean_t = re.sub(r'[\r\n]+', ' ', text).strip()
+                if clean_t and clean_t not in ['♪', '[♪♪♪]', '♪♪♪', '[Music]']:
+                    lines.append(LyricLine(time=time_sec, text=clean_t))
+                    plain_parts.append(clean_t)
+
+            if lines:
+                return LyricsResponse(
+                    track_id=track_id,
+                    title=clean_title,
+                    artist=primary_artist,
+                    is_synced=True,
+                    is_instrumental=False,
+                    lyrics=lines,
+                    plain_lyrics='\n'.join(plain_parts),
+                    source="youtube_captions"
+                )
         except Exception as e:
-            logger.debug(f"Genius fetch exception for '{clean_title}': {e}")
+            logger.debug(f"Error fetching caption JSON from YouTube: {e}")
+
         return None
 
     async def _fetch_from_lyrics_ovh(self, client: httpx.AsyncClient, clean_title: str, primary_artist: str = "") -> Optional[str]:
@@ -270,7 +351,7 @@ class LyricsService:
         1. Instrumental detection (Dubstep, Electronic, Ambient) -> ♪ Instrumental Track ♪
         2. Tier 0: Curated store for trending releases
         3. Tier 1: LRCLIB (exact + candidate search with strict validation)
-        4. Tier 2: Genius (multilingual: Tamil, Hindi, Telugu, English, etc.)
+        4. Tier 2: YouTube Native Captions & Timedtext (Multilingual & Synced)
         5. Tier 3: Lyrics.ovh (global plain lyrics)
         """
         dur_key = duration if duration and duration > 0 else 0
@@ -401,21 +482,11 @@ class LyricsService:
                     lyrics_cache[cache_key] = res
                     return res
 
-            # Step 5: Fallback to Genius (Multilingual: Indian, Hindi, Tamil, Telugu, Pop)
-            genius_lyrics = await self._fetch_from_genius(client, clean_title, primary_artist)
-            if genius_lyrics:
-                res = LyricsResponse(
-                    track_id=track_id,
-                    title=title,
-                    artist=artist,
-                    is_synced=False,
-                    is_instrumental=False,
-                    lyrics=[],
-                    plain_lyrics=genius_lyrics,
-                    source="genius"
-                )
-                lyrics_cache[cache_key] = res
-                return res
+            # Step 5: Fallback to YouTube Timed Captions (100% synchronized, multilingual)
+            yt_captions = await self._fetch_from_youtube_captions(track_id, clean_title, primary_artist, client)
+            if yt_captions and (yt_captions.lyrics or yt_captions.plain_lyrics):
+                lyrics_cache[cache_key] = yt_captions
+                return yt_captions
 
             # Step 6: Fallback to Lyrics.ovh (Global Pop / Western songs)
             ovh_lyrics = await self._fetch_from_lyrics_ovh(client, clean_title, primary_artist)

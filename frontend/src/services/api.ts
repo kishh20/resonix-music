@@ -113,6 +113,8 @@ export const api = {
     preferred_languages?: string[];
     region?: string;
     limit?: number;
+    refresh_nonce?: string;
+    force_refresh?: boolean;
   }): Promise<RecommendationResponse> {
     const resp = await fetch('/api/recommendations/for-you', {
       method: 'POST',

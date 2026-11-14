@@ -23,6 +23,7 @@ import { useJamStore } from '../../stores/useJamStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { ProgressBar } from './ProgressBar';
+import { SafeImage } from '../common/SafeImage';
 
 export const MobileFullPlayer: React.FC = () => {
   const {
@@ -126,9 +127,10 @@ export const MobileFullPlayer: React.FC = () => {
       {/* Center Artwork */}
       <div className="relative z-10 flex-1 flex items-center justify-center py-4 my-auto">
         <div className="relative w-full max-w-[320px] aspect-square rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-slate-900">
-          <img
-            src={currentTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+          <SafeImage
+            src={currentTrack.artwork_url}
             alt={currentTrack.title}
+            aspectRatio="square"
             className="w-full h-full object-cover"
           />
         </div>

@@ -23,6 +23,7 @@ import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useJamStore } from '../../stores/useJamStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { SafeImage } from '../common/SafeImage';
 import { ProgressBar } from './ProgressBar';
 import { VolumeSlider } from './VolumeSlider';
 
@@ -77,9 +78,10 @@ export const BottomPlayer: React.FC = () => {
           onClick={() => setFullPlayerOpen(true)}
           className="relative w-14 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-slate-900 shadow-md group cursor-pointer"
         >
-          <img
-            src={currentTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+          <SafeImage
+            src={currentTrack.artwork_url}
             alt={currentTrack.title}
+            aspectRatio="square"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

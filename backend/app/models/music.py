@@ -99,6 +99,8 @@ class RecommendationRequest(BaseModel):
     preferred_languages: List[str] = []
     region: Optional[str] = None
     limit: int = 25
+    refresh_nonce: Optional[str] = None
+    force_refresh: bool = False
 
 class RecommendationMix(BaseModel):
     id: str

@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Trash2, Music, Sparkles } from 'lucide-react';
 import { usePlayerStore } from '../../stores/usePlayerStore';
+import { SafeImage } from '../common/SafeImage';
 
 export const QueueDrawer: React.FC = () => {
   const {
@@ -85,9 +86,10 @@ export const QueueDrawer: React.FC = () => {
               </h3>
               {currentTrack ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-aurora-surface border border-emerald-500/30 shadow-lg">
-                  <img
-                    src={currentTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+                  <SafeImage
+                    src={currentTrack.artwork_url}
                     alt={currentTrack.title}
+                    aspectRatio="square"
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                   <div className="min-w-0 flex-1">
@@ -129,9 +131,10 @@ export const QueueDrawer: React.FC = () => {
                           onClick={() => playTrack(track, queue)}
                           className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
                         >
-                          <img
-                            src={track.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
-                            alt=""
+                          <SafeImage
+                            src={track.artwork_url}
+                            alt={track.title}
+                            aspectRatio="square"
                             className="w-9 h-9 rounded-md object-cover bg-slate-800"
                           />
                           <div className="min-w-0 flex-1 pr-2">

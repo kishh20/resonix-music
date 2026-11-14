@@ -16,6 +16,7 @@ import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { api } from '../../services/api';
 import { LyricsResponse, LyricLine } from '../../types/music';
+import { SafeImage } from '../common/SafeImage';
 
 export const NowPlayingSidebar: React.FC = () => {
   const {
@@ -116,9 +117,10 @@ export const NowPlayingSidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6 pb-36">
         {/* Large Album Artwork */}
         <div className="relative aspect-square w-full rounded-2xl overflow-hidden shadow-2xl bg-slate-900 border border-white/10 group">
-          <img
-            src={currentTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80'}
+          <SafeImage
+            src={currentTrack.artwork_url}
             alt={currentTrack.title}
+            aspectRatio="square"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">

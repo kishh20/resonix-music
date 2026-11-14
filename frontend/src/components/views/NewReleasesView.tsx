@@ -23,6 +23,7 @@ import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { TrackCard } from '../common/TrackCard';
+import { SafeImage } from '../common/SafeImage';
 import { SectionHeader } from '../common/SectionHeader';
 
 interface NewReleasesViewProps {
@@ -309,9 +310,10 @@ export const NewReleasesView: React.FC<NewReleasesViewProps> = ({
                   className="group relative p-3 rounded-2xl bg-aurora-surface/60 hover:bg-aurora-cardHover/90 border border-white/5 hover:border-white/10 transition-all duration-300 cursor-pointer flex flex-col"
                 >
                   <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-3 bg-slate-900 shadow-md">
-                    <img
-                      src={album.cover_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+                    <SafeImage
+                      src={album.cover_url}
                       alt={album.title}
+                      aspectRatio="square"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />

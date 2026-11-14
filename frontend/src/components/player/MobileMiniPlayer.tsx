@@ -3,6 +3,7 @@ import { Play, Pause, SkipForward, Heart, Loader2 } from 'lucide-react';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { SafeImage } from '../common/SafeImage';
 
 export const MobileMiniPlayer: React.FC = () => {
   const {
@@ -39,9 +40,10 @@ export const MobileMiniPlayer: React.FC = () => {
 
       {/* Left: Thumbnail & Song info */}
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        <img
-          src={currentTrack.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+        <SafeImage
+          src={currentTrack.artwork_url}
           alt={currentTrack.title}
+          aspectRatio="square"
           className="w-10 h-10 rounded-lg object-cover flex-shrink-0 bg-slate-800"
         />
         <div className="min-w-0 pr-2">

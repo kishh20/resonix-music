@@ -4,6 +4,7 @@ import { Track } from '../../types/music';
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { useLibraryStore } from '../../stores/useLibraryStore';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { SafeImage } from './SafeImage';
 
 interface TrackCardProps {
   track: Track;
@@ -41,10 +42,10 @@ export const TrackCard: React.FC<TrackCardProps> = ({ track, queueContext }) => 
     >
       {/* Artwork container */}
       <div className="relative aspect-square w-full rounded-lg overflow-hidden bg-slate-900 shadow-md">
-        <img
-          src={track.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
+        <SafeImage
+          src={track.artwork_url}
           alt={track.title}
-          loading="lazy"
+          aspectRatio="square"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
 

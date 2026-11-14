@@ -14,6 +14,7 @@ import {
 import { usePlayerStore } from '../../stores/usePlayerStore';
 import { api } from '../../services/api';
 import { LyricsResponse, LyricLine } from '../../types/music';
+import { SafeImage } from '../common/SafeImage';
 
 export const LyricsView: React.FC = () => {
   const { 
@@ -131,9 +132,10 @@ export const LyricsView: React.FC = () => {
         {/* Track Info Left */}
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-900 border border-white/10 shrink-0 shadow-lg">
-            <img 
-              src={currentTrack.artwork_url || '/favicon.svg'} 
-              alt="" 
+            <SafeImage 
+              src={currentTrack.artwork_url} 
+              alt={currentTrack.title} 
+              aspectRatio="square"
               className="w-full h-full object-cover" 
             />
           </div>

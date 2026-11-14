@@ -6,6 +6,7 @@ import { usePlayerStore } from '../../stores/usePlayerStore';
 import { usePreferencesStore } from '../../stores/usePreferencesStore';
 import { TrackRow } from '../common/TrackRow';
 import { TrackCard } from '../common/TrackCard';
+import { SafeImage } from '../common/SafeImage';
 
 interface SearchViewProps {
   initialQuery?: string;
@@ -210,9 +211,10 @@ export const SearchView: React.FC<SearchViewProps> = ({
                   className="group relative p-6 rounded-2xl bg-aurora-surface hover:bg-aurora-cardHover border border-white/5 hover:border-white/10 transition-all cursor-pointer shadow-xl flex flex-col justify-between h-auto"
                 >
                   <div className="w-28 h-28 rounded-xl overflow-hidden mb-4 bg-slate-900 shadow-md">
-                    <img
-                      src={topResult.artwork_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=80'}
-                      alt=""
+                    <SafeImage
+                      src={topResult.artwork_url}
+                      alt={topResult.title}
+                      aspectRatio="square"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
