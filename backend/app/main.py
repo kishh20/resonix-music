@@ -9,19 +9,22 @@ from app.middleware import RateLimiterMiddleware
 from app.api import (
     music_router, spotify_router, recommendations_router, 
     health_router, discovery_router, lyrics_router, 
-    discord_router, jam_router, library_router
+    discord_router, jam_router, library_router, agents_router
 )
 from app.services.scheduler_service import catalogue_scheduler
+from app.agents import agent_manager
 
 logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Start automatic catalogue discovery scheduler
+    # Startup: Start automatic catalogue discovery scheduler & agent fleet
     catalogue_scheduler.start()
+    await agent_manager.start()
     yield
-    # Shutdown: Stop scheduler and close connection pools
+    # Shutdown: Stop scheduler, agent fleet and close connection pools
     catalogue_scheduler.stop()
+    await agent_manager.stop()
     try:
         from app.api.music import close_stream_client
         await close_stream_client()
@@ -77,6 +80,7 @@ app.include_router(lyrics_router)
 app.include_router(discord_router)
 app.include_router(jam_router)
 app.include_router(library_router)
+app.include_router(agents_router)
 
 @app.get("/")
 async def root():

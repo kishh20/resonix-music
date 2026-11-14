@@ -7,3 +7,4 @@ from .lyrics import router as lyrics_router
 from .discord import router as discord_router
 from .jam import router as jam_router
 from .library import router as library_router
+from .agents import router as agents_router

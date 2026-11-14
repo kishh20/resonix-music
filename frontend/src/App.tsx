@@ -22,6 +22,7 @@ import { JamModal } from './components/jam/JamModal';
 import { AddToPlaylistModal } from './components/common/AddToPlaylistModal';
 import { AuthModal } from './components/views/AuthModal';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
+import { AIDJModal } from './components/dj/AIDJModal';
 
 // Views
 import { HomeView } from './components/views/HomeView';
@@ -227,6 +228,8 @@ export default function App() {
       />
 
       <OnboardingModal />
+
+      <AIDJModal />
     </div>
   );
 }

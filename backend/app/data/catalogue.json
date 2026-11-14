@@ -1,5 +1,5 @@
 {
-  "last_synced_at": "2026-11-14T09:39:00.798130+00:00",
+  "last_synced_at": "2026-11-14T11:39:09.973391+00:00",
   "tracks": {
     "audius:AK3w5q0": {
       "id": "audius:AK3w5q0",
@@ -3291,6 +3291,78 @@
       "genre": null,
       "bitrate": "320kbps Ultra HD (Opus/AAC)",
       "release_date": "2026-11-14T06:38:40.369734+00:00",
+      "play_count": 0,
+      "permalink": null,
+      "availability_status": "available"
+    },
+    "yt_cTa92j753NU": {
+      "id": "yt_cTa92j753NU",
+      "title": "Financial Advice",
+      "artist": "Wiz Khalifa",
+      "artist_id": null,
+      "album": "YouTube Music",
+      "album_id": null,
+      "artwork_url": "https://i.ytimg.com/vi/cTa92j753NU/hqdefault.jpg",
+      "duration": 188,
+      "stream_url": "/api/music/stream?id=cTa92j753NU&title=Financial%20Advice&artist=Wiz%20Khalifa&duration=188",
+      "provider": "youtube",
+      "genre": null,
+      "bitrate": "320kbps Ultra HD (Opus/AAC)",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "play_count": 0,
+      "permalink": null,
+      "availability_status": "available"
+    },
+    "yt_5KsyT6PIyKE": {
+      "id": "yt_5KsyT6PIyKE",
+      "title": "Ramayana  | Namit M, Nitesh T | Hans Zimmer,AR Rahman,Kumar Vishwas",
+      "artist": "T-Series",
+      "artist_id": null,
+      "album": "YouTube Music",
+      "album_id": null,
+      "artwork_url": "https://i.ytimg.com/vi/5KsyT6PIyKE/hqdefault.jpg",
+      "duration": 156,
+      "stream_url": "/api/music/stream?id=5KsyT6PIyKE&title=Ramayana%20%20%7C%20Namit%20M%2C%20Nitesh%20T%20%7C%20Hans%20Zimmer%2CAR%20Rahman%2CKumar%20Vishwas&artist=T-Series&duration=156",
+      "provider": "youtube",
+      "genre": null,
+      "bitrate": "320kbps Ultra HD (Opus/AAC)",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "play_count": 0,
+      "permalink": null,
+      "availability_status": "available"
+    },
+    "yt_0GhbkrOg9gA": {
+      "id": "yt_0GhbkrOg9gA",
+      "title": "Worldwide Choppers (Feat. Busta Rhymes,  Yelawolf, Twisted Insane...) | OFFICIAL AUDIO",
+      "artist": "Tech N9ne",
+      "artist_id": null,
+      "album": "YouTube Music",
+      "album_id": null,
+      "artwork_url": "https://i.ytimg.com/vi/0GhbkrOg9gA/hqdefault.jpg",
+      "duration": 330,
+      "stream_url": "/api/music/stream?id=0GhbkrOg9gA&title=Worldwide%20Choppers%20%28Feat.%20Busta%20Rhymes%2C%20%20Yelawolf%2C%20Twisted%20Insane...%29%20%7C%20OFFICIAL%20AUDIO&artist=Tech%20N9ne&duration=330",
+      "provider": "youtube",
+      "genre": null,
+      "bitrate": "320kbps Ultra HD (Opus/AAC)",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "play_count": 0,
+      "permalink": null,
+      "availability_status": "available"
+    },
+    "yt_xe_iCkFsQKE": {
+      "id": "yt_xe_iCkFsQKE",
+      "title": "Earned It",
+      "artist": "The Weeknd",
+      "artist_id": null,
+      "album": "YouTube Music",
+      "album_id": null,
+      "artwork_url": "https://i.ytimg.com/vi/xe_iCkFsQKE/hqdefault.jpg",
+      "duration": 252,
+      "stream_url": "/api/music/stream?id=xe_iCkFsQKE&title=Earned%20It&artist=The%20Weeknd&duration=252",
+      "provider": "youtube",
+      "genre": null,
+      "bitrate": "320kbps Ultra HD (Opus/AAC)",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
       "play_count": 0,
       "permalink": null,
       "availability_status": "available"
@@ -6629,30 +6701,142 @@
         }
       ],
       "last_synced_at": "2026-11-14T06:38:40.369734+00:00"
+    },
+    "yt_album:wiz_khalifa_financial_advice": {
+      "id": "yt_album:wiz_khalifa_financial_advice",
+      "title": "Financial Advice",
+      "artist": "Wiz Khalifa",
+      "artist_id": null,
+      "cover_url": "https://i.ytimg.com/vi/cTa92j753NU/hqdefault.jpg",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "release_type": "single",
+      "provider": "youtube",
+      "provider_id": "yt_cTa92j753NU",
+      "track_count": 1,
+      "tracks": [
+        {
+          "id": "yt_cTa92j753NU",
+          "title": "Financial Advice",
+          "artist": "Wiz Khalifa",
+          "artist_id": null,
+          "album": "YouTube Music",
+          "album_id": null,
+          "artwork_url": "https://i.ytimg.com/vi/cTa92j753NU/hqdefault.jpg",
+          "duration": 188,
+          "stream_url": "/api/music/stream?id=cTa92j753NU&title=Financial%20Advice&artist=Wiz%20Khalifa&duration=188",
+          "provider": "youtube",
+          "genre": null,
+          "bitrate": "320kbps Ultra HD (Opus/AAC)",
+          "release_date": "2026-11-14T11:39:09.973498+00:00",
+          "play_count": 0,
+          "permalink": null,
+          "availability_status": "available"
+        }
+      ],
+      "last_synced_at": "2026-11-14T11:39:09.973498+00:00"
+    },
+    "yt_album:t-series_ramayana__|_namit_m,_nitesh_t_|_hans_zimmer,ar_rahman,kumar_vishwas": {
+      "id": "yt_album:t-series_ramayana__|_namit_m,_nitesh_t_|_hans_zimmer,ar_rahman,kumar_vishwas",
+      "title": "Ramayana  | Namit M, Nitesh T | Hans Zimmer,AR Rahman,Kumar Vishwas",
+      "artist": "T-Series",
+      "artist_id": null,
+      "cover_url": "https://i.ytimg.com/vi/5KsyT6PIyKE/hqdefault.jpg",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "release_type": "single",
+      "provider": "youtube",
+      "provider_id": "yt_5KsyT6PIyKE",
+      "track_count": 1,
+      "tracks": [
+        {
+          "id": "yt_5KsyT6PIyKE",
+          "title": "Ramayana  | Namit M, Nitesh T | Hans Zimmer,AR Rahman,Kumar Vishwas",
+          "artist": "T-Series",
+          "artist_id": null,
+          "album": "YouTube Music",
+          "album_id": null,
+          "artwork_url": "https://i.ytimg.com/vi/5KsyT6PIyKE/hqdefault.jpg",
+          "duration": 156,
+          "stream_url": "/api/music/stream?id=5KsyT6PIyKE&title=Ramayana%20%20%7C%20Namit%20M%2C%20Nitesh%20T%20%7C%20Hans%20Zimmer%2CAR%20Rahman%2CKumar%20Vishwas&artist=T-Series&duration=156",
+          "provider": "youtube",
+          "genre": null,
+          "bitrate": "320kbps Ultra HD (Opus/AAC)",
+          "release_date": "2026-11-14T11:39:09.973498+00:00",
+          "play_count": 0,
+          "permalink": null,
+          "availability_status": "available"
+        }
+      ],
+      "last_synced_at": "2026-11-14T11:39:09.973498+00:00"
+    },
+    "yt_album:tech_n9ne_worldwide_choppers_(feat._busta_rhymes,__yelawolf,_twisted_insane...)_|_official_audio": {
+      "id": "yt_album:tech_n9ne_worldwide_choppers_(feat._busta_rhymes,__yelawolf,_twisted_insane...)_|_official_audio",
+      "title": "Worldwide Choppers (Feat. Busta Rhymes,  Yelawolf, Twisted Insane...) | OFFICIAL AUDIO",
+      "artist": "Tech N9ne",
+      "artist_id": null,
+      "cover_url": "https://i.ytimg.com/vi/0GhbkrOg9gA/hqdefault.jpg",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "release_type": "single",
+      "provider": "youtube",
+      "provider_id": "yt_0GhbkrOg9gA",
+      "track_count": 1,
+      "tracks": [
+        {
+          "id": "yt_0GhbkrOg9gA",
+          "title": "Worldwide Choppers (Feat. Busta Rhymes,  Yelawolf, Twisted Insane...) | OFFICIAL AUDIO",
+          "artist": "Tech N9ne",
+          "artist_id": null,
+          "album": "YouTube Music",
+          "album_id": null,
+          "artwork_url": "https://i.ytimg.com/vi/0GhbkrOg9gA/hqdefault.jpg",
+          "duration": 330,
+          "stream_url": "/api/music/stream?id=0GhbkrOg9gA&title=Worldwide%20Choppers%20%28Feat.%20Busta%20Rhymes%2C%20%20Yelawolf%2C%20Twisted%20Insane...%29%20%7C%20OFFICIAL%20AUDIO&artist=Tech%20N9ne&duration=330",
+          "provider": "youtube",
+          "genre": null,
+          "bitrate": "320kbps Ultra HD (Opus/AAC)",
+          "release_date": "2026-11-14T11:39:09.973498+00:00",
+          "play_count": 0,
+          "permalink": null,
+          "availability_status": "available"
+        }
+      ],
+      "last_synced_at": "2026-11-14T11:39:09.973498+00:00"
+    },
+    "yt_album:the_weeknd_earned_it": {
+      "id": "yt_album:the_weeknd_earned_it",
+      "title": "Earned It",
+      "artist": "The Weeknd",
+      "artist_id": null,
+      "cover_url": "https://i.ytimg.com/vi/xe_iCkFsQKE/hqdefault.jpg",
+      "release_date": "2026-11-14T11:39:09.973498+00:00",
+      "release_type": "single",
+      "provider": "youtube",
+      "provider_id": "yt_xe_iCkFsQKE",
+      "track_count": 1,
+      "tracks": [
+        {
+          "id": "yt_xe_iCkFsQKE",
+          "title": "Earned It",
+          "artist": "The Weeknd",
+          "artist_id": null,
+          "album": "YouTube Music",
+          "album_id": null,
+          "artwork_url": "https://i.ytimg.com/vi/xe_iCkFsQKE/hqdefault.jpg",
+          "duration": 252,
+          "stream_url": "/api/music/stream?id=xe_iCkFsQKE&title=Earned%20It&artist=The%20Weeknd&duration=252",
+          "provider": "youtube",
+          "genre": null,
+          "bitrate": "320kbps Ultra HD (Opus/AAC)",
+          "release_date": "2026-11-14T11:39:09.973498+00:00",
+          "play_count": 0,
+          "permalink": null,
+          "availability_status": "available"
+        }
+      ],
+      "last_synced_at": "2026-11-14T11:39:09.973498+00:00"
     }
   },
   "followed_artists": {},
   "sync_logs": [
-    {
-      "id": "log_1794576170",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 3.42,
-      "error_message": null,
-      "created_at": "2026-11-13T13:22:46.705286+00:00"
-    },
-    {
-      "id": "log_1794576181",
-      "provider": "all_providers",
-      "action": "discovery",
-      "items_count": 0,
-      "status": "success",
-      "duration_seconds": 2.54,
-      "error_message": null,
-      "created_at": "2026-11-13T13:22:59.133252+00:00"
-    },
     {
       "id": "log_1794576780",
       "provider": "all_providers",
@@ -6832,6 +7016,26 @@
       "duration_seconds": 5.54,
       "error_message": null,
       "created_at": "2026-11-14T09:39:00.798130+00:00"
+    },
+    {
+      "id": "log_1794652749",
+      "provider": "youtube_audius_jamendo",
+      "action": "discovery",
+      "items_count": 0,
+      "status": "success",
+      "duration_seconds": 2.44,
+      "error_message": null,
+      "created_at": "2026-11-14T10:39:07.000377+00:00"
+    },
+    {
+      "id": "log_1794656358",
+      "provider": "youtube_audius_jamendo",
+      "action": "discovery",
+      "items_count": 4,
+      "status": "success",
+      "duration_seconds": 8.28,
+      "error_message": null,
+      "created_at": "2026-11-14T11:39:09.973391+00:00"
     }
   ]
 }

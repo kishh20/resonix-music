@@ -173,3 +173,64 @@ export interface UserProfile {
 }
 
 export type RepeatMode = 'off' | 'all' | 'one';
+
+export interface AIDJRequest {
+  prompt: string;
+  user_name?: string;
+  favorite_artists?: string[];
+  preferred_languages?: string[];
+  preferred_genres?: string[];
+  region?: string;
+  current_track?: Track;
+  recent_track_ids?: string[];
+}
+
+export interface AIDJResponse {
+  dj_name: string;
+  vibe_title: string;
+  energy_level: string;
+  dj_commentary: string;
+  suggested_queries: string[];
+  tracks: Track[];
+}
+
+export interface AgentTelemetry {
+  fleet_status: string;
+  active_agent_count: number;
+  agents: {
+    ai_dj: {
+      name: string;
+      type: string;
+      status: string;
+      model_source: string;
+    };
+    discovery_radar: {
+      name: string;
+      status: string;
+      is_active: boolean;
+      total_catalogue_size: number;
+      last_run: string | null;
+      last_duration_seconds: number;
+      monitored_vectors: string[];
+    };
+    lyrics_weaver: {
+      name: string;
+      status: string;
+      is_active: boolean;
+      total_healed_count: number;
+      instrumentals_tagged: number;
+      last_healed_song: string | null;
+      last_run: string | null;
+    };
+    stream_healer: {
+      name: string;
+      status: string;
+      is_active: boolean;
+      total_checked: number;
+      total_repaired: number;
+      healthy_ratio_pct: number;
+      last_repaired_song: string | null;
+      last_run: string | null;
+    };
+  };
+}

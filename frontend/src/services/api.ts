@@ -9,7 +9,10 @@ import {
   SyncStatusResponse,
   CatalogueAlbum,
   FollowedArtist,
-  LyricsResponse
+  LyricsResponse,
+  AIDJRequest,
+  AIDJResponse,
+  AgentTelemetry
 } from '../types/music';
 
 export const api = {
@@ -342,5 +345,40 @@ export const api = {
       if (resp.ok) return resp.json();
     } catch {}
     return [];
+  },
+
+  // ==========================================
+  // MULTI-AGENT FLEET ENDPOINTS
+  // ==========================================
+  async spinAIDJ(req: AIDJRequest): Promise<AIDJResponse> {
+    const resp = await fetch('/api/agents/dj/spin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req)
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to spin AI DJ vibe');
+    }
+    return resp.json();
+  },
+
+  async getAgentTelemetry(): Promise<AgentTelemetry> {
+    const resp = await fetch('/api/agents/telemetry');
+    if (!resp.ok) throw new Error('Failed to fetch agent telemetry');
+    return resp.json();
+  },
+
+  async triggerAgent(agentName: string, payload?: any): Promise<any> {
+    const resp = await fetch(`/api/agents/trigger/${encodeURIComponent(agentName)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {})
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to trigger ${agentName}`);
+    }
+    return resp.json();
   }
 };

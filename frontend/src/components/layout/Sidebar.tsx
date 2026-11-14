@@ -10,9 +10,11 @@ import {
   Music, 
   Sparkles,
   Smartphone,
-  Download
+  Download,
+  Headphones
 } from 'lucide-react';
 import { useLibraryStore } from '../../stores/useLibraryStore';
+import { useDJStore } from '../../stores/useDJStore';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 interface SidebarProps {
@@ -27,6 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenCreatePlaylist
 }) => {
   const { playlists, likedSongs } = useLibraryStore();
+  const { setDJOpen } = useDJStore();
   const { isInstalled, installApp } = usePWAInstall();
 
   const navItems = [
@@ -58,6 +61,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Primary Navigation */}
       <nav className="px-3 py-2 space-y-1">
+        {/* AI DJ & Agent Fleet Quick Launch Button */}
+        <button
+          onClick={() => setDJOpen(true)}
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-emerald-500/15 via-indigo-500/10 to-purple-500/15 text-emerald-400 hover:text-white border border-emerald-500/20 hover:border-emerald-500/40 hover:scale-[1.02] shadow-sm group mb-2"
+        >
+          <div className="flex items-center gap-3">
+            <Headphones className="w-5 h-5 text-emerald-400 group-hover:animate-pulse" />
+            <span className="font-bold">DJ Resonix & Fleet</span>
+          </div>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            4 AI
+          </span>
+        </button>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;

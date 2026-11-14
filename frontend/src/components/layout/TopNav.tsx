@@ -9,10 +9,12 @@ import {
   Play,
   Loader2,
   Sparkles,
-  Download
+  Download,
+  Headphones
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { usePlayerStore } from '../../stores/usePlayerStore';
+import { useDJStore } from '../../stores/useDJStore';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { api } from '../../services/api';
 import { Track } from '../../types/music';
@@ -36,6 +38,7 @@ export const TopNav: React.FC<TopNavProps> = ({
 }) => {
   const { user, isAuthenticated, isConfigured } = useAuthStore();
   const { playTrack } = usePlayerStore();
+  const { setDJOpen } = useDJStore();
   const { isInstalled, installApp } = usePWAInstall();
 
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -249,6 +252,16 @@ export const TopNav: React.FC<TopNavProps> = ({
             <span className="hidden sm:inline">Install App</span>
           </button>
         )}
+
+        {/* Launch AI DJ Button */}
+        <button
+          onClick={() => setDJOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-indigo-500/20 to-purple-500/20 hover:from-emerald-500/30 hover:to-indigo-500/30 text-emerald-400 hover:text-white border border-emerald-500/30 text-xs font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm"
+          title="Open AI DJ & Multi-Agent Fleet"
+        >
+          <Headphones className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="hidden md:inline font-bold">AI DJ</span>
+        </button>
 
         {/* Settings button */}
         <button
