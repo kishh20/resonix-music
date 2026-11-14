@@ -62,23 +62,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
     const seed = forcedSeed || Date.now().toString();
     setIsRefreshing(true);
 
-    // 1. Pick rotating artist & language from user preferences
-    if (artists && artists.length > 0) {
-      const randomArtist = artists[Math.floor(Math.random() * artists.length)];
-      setActiveArtist(randomArtist);
-    } else {
-      setActiveArtist(null);
-    }
+    // 1. Pick rotating artist & language from user preferences (single source of truth)
+    const selectedArtist = (artists && artists.length > 0)
+      ? artists[Math.floor(Math.random() * artists.length)]
+      : null;
+    setActiveArtist(selectedArtist);
 
     const nonEnglishLangs = (languages || []).filter(l => l.toLowerCase() !== 'english');
-    if (nonEnglishLangs.length > 0) {
-      const randomLang = nonEnglishLangs[Math.floor(Math.random() * nonEnglishLangs.length)];
-      setActiveLanguage(randomLang);
-    } else if (languages && languages.length > 0) {
-      setActiveLanguage(languages[0]);
-    } else {
-      setActiveLanguage(null);
-    }
+    const selectedLang = nonEnglishLangs.length > 0
+      ? nonEnglishLangs[Math.floor(Math.random() * nonEnglishLangs.length)]
+      : (languages && languages.length > 0 ? languages[0] : null);
+    setActiveLanguage(selectedLang);
 
     const recentIds = listeningHistory.slice(0, 10).map(h => h.track.id);
     const likedIds = likedSongs.slice(0, 10).map(t => t.id);
@@ -115,24 +109,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
       })
       .catch(() => null);
 
-    // 4. Fetch rotating featured artist shelf in parallel
-    const selectedArtist = artists && artists.length > 0 
-      ? artists[Math.floor(Math.random() * artists.length)] 
-      : null;
-
+    // 4. Fetch rotating featured artist shelf using the EXACT SAME selectedArtist
     const artistPromise = selectedArtist 
-      ? api.search(selectedArtist, undefined, 12)
-          .then(res => setFavoriteArtistTracks(res.tracks || []))
+      ? api.search(selectedArtist, undefined, 16)
+          .then(res => {
+            const raw = res.tracks || [];
+            const sLower = selectedArtist.toLowerCase();
+            const matched = raw.filter(t => 
+              t.artist.toLowerCase().includes(sLower) || 
+              sLower.includes(t.artist.toLowerCase())
+            );
+            setFavoriteArtistTracks(matched.length >= 3 ? matched : raw);
+          })
           .catch(() => setFavoriteArtistTracks([]))
       : Promise.resolve();
 
-    // 5. Fetch rotating language shelf in parallel
-    const langToFetch = nonEnglishLangs.length > 0
-      ? nonEnglishLangs[Math.floor(Math.random() * nonEnglishLangs.length)]
-      : null;
-
-    const langPromise = langToFetch
-      ? api.search(`${langToFetch} hits`, undefined, 12)
+    // 5. Fetch rotating language shelf using the EXACT SAME selectedLang
+    const langPromise = selectedLang
+      ? api.search(`${selectedLang} hits`, undefined, 14)
           .then(res => setLanguageTracks(res.tracks || []))
           .catch(() => setLanguageTracks([]))
       : Promise.resolve();
