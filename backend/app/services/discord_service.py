@@ -2,17 +2,23 @@ import os
 import time
 import logging
 from typing import Optional, Dict, Any
-from pypresence import Presence
+
+try:
+    from pypresence import Presence
+    HAS_PYPRESENCE = True
+except ImportError:
+    Presence = None  # type: ignore
+    HAS_PYPRESENCE = False
 
 logger = logging.getLogger(__name__)
 
-# Default registered open Discord Rich Presence App ID for Aurora Music
+# Default registered open Discord Rich Presence App ID for Resonix Music
 DISCORD_CLIENT_ID = os.getenv("DISCORD_CLIENT_ID", "1314992523282219080")
 
 class DiscordRPCService:
     def __init__(self):
         self.client_id = DISCORD_CLIENT_ID
-        self.rpc: Optional[Presence] = None
+        self.rpc: Optional[Any] = None
         self.is_connected: bool = False
         self.enabled: bool = True
         self.last_connect_attempt: float = 0
@@ -20,8 +26,9 @@ class DiscordRPCService:
     def connect(self) -> bool:
         """
         Attempts to connect to Discord local IPC pipe without throwing errors if Discord is closed.
+        Gracefully returns False if pypresence is not installed or Discord is unreachable.
         """
-        if not self.enabled:
+        if not self.enabled or not HAS_PYPRESENCE:
             return False
 
         now = time.time()
